@@ -34,21 +34,22 @@ class Game {
 		this.pg.time.advancedTiming = true;
 		this.pg.time.desiredFps = 60;
 
-	   //this.pg.load.image('sky', 'assets/sky.png');
-	   //this.pg.load.image('ground', 'assets/platform.png');
-		this.pg.load.image('star', 'assets/star.png');
-		this.pg.load.image('road', 'assets/road.png');
-		this.pg.load.image('car', 'assets/car60.png');
-	   //this.pg.load.spritesheet('dude', 'assets/dude.png', 32, 48);
+		this.pg.load.image('star', 'assets/images/star.png');
+		this.pg.load.image('road', 'assets/images/road.png');
+		this.pg.load.image('car', 'assets/images/car60.png');
+
+		 this.pg.load.audio('taverna', ['assets/audio/taverna.mp3', 'assets/audio/taverna.ogg']);
+		 this.pg.load.audio('game', ['assets/audio/game.mp3', 'assets/audio/game.ogg']);
 	}
 
 	create() {
-	   //this.pg.add.sprite(0, 0, 'sky'); //  A simple background for our game
-
 		this.playerRoad = new Road(this.pg);
 
 		this.pg.input.onDown.add(this.onInputDown, this);
 		this.player = new Player(this.pg);
+
+		var music = this.pg.add.audio('game');
+		music.play();
 
 		this.initNetwork()
 
@@ -67,7 +68,7 @@ class Game {
 	}
 
 	render() {
-	   this.pg.debug.cameraInfo(this.pg.camera, 8, 500);
+		this.pg.debug.cameraInfo(this.pg.camera, 8, 500);
 		this.pg.debug.text('fps: ' + (this.pg.time.fps || '--'), 700, 570, "#00ff00");
 	}
 
