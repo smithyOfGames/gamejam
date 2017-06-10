@@ -1,77 +1,47 @@
 'use strict';
 
 class Game {
-	constructor(contanerName, playerName) {
-		log('constructor');
-		this.pg = new Phaser.Game(
-			800, 600,
-			Phaser.AUTO,
-			contanerName,
-			{
-				preload: ()=> this.preload(),
-				create: ()=> this.create(),
-				update: ()=> this.update(),
-				render: ()=> this.render()
-			}
-		);
-
-		this.playerName = playerName;
-		this.playerRoad = null;
-		this.joystick = null;
-		this.buttonA = null;
-		this.keyboard = null;
-		this.fireButton = null;
-		this.points = new Set();
-		this.players = new Map();
-	}
-
 	initNetwork() {
 		this.socket = io.connect(window.location.host, {path: "/ws/", transports: ['websocket']});
 		this.socket.on('tick', (msg)=>this.onTick(msg));
 		this.socket.on('playerDisconnected', (msg)=>this.onPlayerDisconnected(msg));
 	}
 
-	preload() {
-		this.pg.time.advancedTiming = true;
-		this.pg.time.desiredFps = 60;
+    constructor() {
+        this.playerName = "player123";
+        this.playerRoad = null;
+        this.joystick = null;
+        this.buttonA = null;
+        this.keyboard = null;
+        this.fireButton = null;
+        this.points = new Set();
+        this.players = new Map();
 
-        this.pg.load.atlas('gamepad', 'assets/virtualjoystick/atlas.png', 'assets/virtualjoystick/atlas.json');
-		this.pg.load.image('barrel', 'assets/barrel.png');
-		this.pg.load.image('water', 'assets/water.png');
-		this.pg.load.image('red', 'assets/ship2_red.png');
-		this.pg.load.image('blue', 'assets/ship2_blue.png');
-		this.pg.load.image('green', 'assets/ship2_green.png');
-		this.pg.load.image('yellow', 'assets/ship2_yellow.png');
-
-		this.pg.load.audio('taverna', ['assets/audio/taverna.mp3', 'assets/audio/taverna.ogg']);
-		this.pg.load.audio('game', ['assets/audio/game.mp3', 'assets/audio/game.ogg']);
-	}
+        log("Game - constructor()");
+    }
 
 	create() {
         this.initNetwork();
 
-		let music = this.pg.add.audio('game');
-		music.play();
-
         this.initVirtualGamepad();
-		this.playerRoad = new Road(this.pg);
+		this.playerRoad = new Road(pgame);
 
 		this.socket.emit("joinNewPlayer", this.playerName);
 
-		this.keyboard = this.pg.input.keyboard.createCursorKeys();
-		this.fireButton = this.pg.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-		this.fireButton.onDown.add(this.fire, this);
+        this.keyboard = pgame.input.keyboard.createCursorKeys();
+        this.fireButton = pgame.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+        this.fireButton.onDown.add(this.fire, this);
 
-		let btnDown = this.pg.input.keyboard.addKey(Phaser.Keyboard.S);
+		let btnDown = pgame.input.keyboard.addKey(Phaser.Keyboard.S);
 		btnDown.onDown.add(()=>this.socket.emit("move", "down"), this);
 		btnDown.onUp.add(()=>this.socket.emit("move", "stop"), this);
 
-		let btnUp = this.pg.input.keyboard.addKey(Phaser.Keyboard.W);
+		let btnUp = pgame.input.keyboard.addKey(Phaser.Keyboard.W);
 		btnUp.onDown.add(()=>this.socket.emit("move", "up"), this);
 		btnUp.onUp.add(()=>this.socket.emit("move", "stop"), this);
 
-		log("game created");
-	}
+        log("Game - create()");
+    }
 
 	update() {
 	    let currentPlayer = this.players.get(this.socket.id);
@@ -86,23 +56,52 @@ class Game {
         currentPlayer.update();
 		let playerVel = currentPlayer.vel;
 
-		this.playerRoad.vel = playerVel;
-		this.playerRoad.update();
+        this.playerRoad.vel = playerVel;
+        this.playerRoad.update();
 
-		for (let p of this.points) {
-			p.vel = playerVel; // все предметы на дороге (движутся со скоростью игрока ему навстресу)
-			p.update(); // TODO передать скорость дороги
-		}
+        for (let p of this.points) {
+            p.vel = playerVel; // все предметы на дороге (движутся со скоростью игрока ему навстресу)
+            p.update(); // TODO передать скорость дороги
+        }
 
-		for (let p of this.players.values()) {
-			p.update();
-		}
-	}
+        for (let p of this.players.values()) {
+            p.update();
+        }
 
-	render() {
-		this.pg.debug.cameraInfo(this.pg.camera, 8, 500);
-		this.pg.debug.text('fps: ' + (this.pg.time.fps || '--'), 700, 570, "#00ff00");
-	}
+        log("Game - update()");
+    }
+
+    onConnect() {
+        if (this.player) {
+            this.player.id = this.socket.id;
+        }
+    }
+
+    onTick(msg) {
+        if (!this.player) {
+            return;
+        }
+
+        let tickInfo = JSON.parse(msg);
+        for (let p of tickInfo.players) {
+            if (p.id === this.player.id) {
+                this.player.posX = p.pos.x;
+                this.player.sprite.y = p.pos.y;
+            }
+        }
+    }
+
+    onPlayerConnected(msg) {
+        log("connected player, id: " + msg);
+        let info = JSON.parse(msg);
+        let p = new Player(pgame, info.id, "user");
+        this.players.set(info.id, p);
+    }
+
+    onPlayerDisconnected(msg) {
+        log("disconnected player, id: " + msg);
+        this.players.delete(msg);
+    }
 
     fire() {
         let msg = {
@@ -110,6 +109,7 @@ class Game {
             y: this.players.get(this.socket.id).getTargetY()
         };
         log('click to ' + JSON.stringify(msg));
+        this.socket.emit("move", JSON.stringify(msg));
 
         this.addPoint(700, this.players.get(this.socket.id).getTargetY());
 	}
@@ -128,14 +128,14 @@ class Game {
 	}
 
    initVirtualGamepad() {
-		let gamepad = this.pg.plugins.add(Phaser.Plugin.VirtualGamepad);
-		this.joystick = gamepad.addJoystick(90, this.pg.height - 90, 0.75, 'gamepad');
-		this.buttonA = gamepad.addButton(this.pg.width - 90, this.pg.height - 90, 0.75, 'gamepad');
+		let gamepad = pgame.plugins.add(Phaser.Plugin.VirtualGamepad);
+		this.joystick = gamepad.addJoystick(90, pgame.height - 90, 0.75, 'gamepad');
+		this.buttonA = gamepad.addButton(pgame.width - 90, pgame.height - 90, 0.75, 'gamepad');
     }
 
 	onPlayerConnected(playerId, playerName, color) {
 		log("connected player, id: " + playerId);
-		let p = new Player(this.pg, playerId, playerName, color);
+		let p = new Player(pgame, playerId, playerName, color);
 		this.players.set(playerId, p);
 	}
 
