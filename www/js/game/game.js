@@ -50,19 +50,23 @@ class Game {
 		this.pg.load.image('star', 'assets/star.png');
 		this.pg.load.image('road', 'assets/road.png');
 		this.pg.load.image('car', 'assets/car60.png');
+
+		this.pg.load.audio('taverna', ['assets/audio/taverna.mp3', 'assets/audio/taverna.ogg']);
+		this.pg.load.audio('game', ['assets/audio/game.mp3', 'assets/audio/game.ogg']);
 	}
 
 	create() {
-	   	this.playerRoad = new Road(this.pg);
-        this.player = new Player(this.pg, this.socket.id, this.playerName);
-        this.socket.emit("setPlayerName", this.player.name);
+		let music = this.pg.add.audio('game');
+		music.play();
 
         this.initVirtualGamepad();
+		this.playerRoad = new Road(this.pg);
+		this.player = new Player(this.pg, this.socket.id, this.playerName);
+		this.socket.emit("setPlayerName", this.player.name);
 
-        this.keyboard = this.pg.input.keyboard.createCursorKeys();
-        this.fireButton = this.pg.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-
-        this.fireButton.onDown.add(this.fire, this);
+		this.keyboard = this.pg.input.keyboard.createCursorKeys();
+		this.fireButton = this.pg.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+		this.fireButton.onDown.add(this.fire, this);
 
 		log("game created");
 	}
@@ -96,7 +100,7 @@ class Game {
 	}
 
 	render() {
-	    this.pg.debug.cameraInfo(this.pg.camera, 8, 500);
+		this.pg.debug.cameraInfo(this.pg.camera, 8, 500);
 		this.pg.debug.text('fps: ' + (this.pg.time.fps || '--'), 700, 570, "#00ff00");
 	}
 
