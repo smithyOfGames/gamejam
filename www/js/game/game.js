@@ -47,7 +47,7 @@ class Game {
 		this.pg.time.advancedTiming = true;
 		this.pg.time.desiredFps = 60;
 
-      this.pg.load.atlas('gamepad', 'assets/virtualjoystick/atlas.png', 'assets/virtualjoystick/atlas.json');
+		this.pg.load.atlas('gamepad', 'assets/virtualjoystick/atlas.png', 'assets/virtualjoystick/atlas.json');
 		this.pg.load.image('star', 'assets/images/star.png');
 		this.pg.load.image('road', 'assets/images/road.png');
 		this.pg.load.image('car', 'assets/images/car60.png');
