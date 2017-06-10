@@ -4,7 +4,7 @@ class Game {
 	constructor(contanerName, playerName) {
 		log('constructor');
 
-        this.initNetwork();
+      this.initNetwork();
 
 		this.pg = new Phaser.Game(
 			800, 600,
@@ -69,22 +69,21 @@ class Game {
 		this.fireButton = this.pg.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 		this.fireButton.onDown.add(this.fire, this);
 
+		let btnDown = this.pg.input.keyboard.addKey(Phaser.Keyboard.F);
+		btnDown.onDown.add(()=>this.socket.emit("move", "down"), this);
+		btnDown.onUp.add(()=>this.socket.emit("move", "stop"), this);
+
+		let btnUp = this.pg.input.keyboard.addKey(Phaser.Keyboard.R);
+		btnUp.onDown.add(()=>this.socket.emit("move", "up"), this);
+		btnUp.onUp.add(()=>this.socket.emit("move", "stop"), this);
+
 		log("game created");
 	}
 
 	update() {
-        let velocity = 0;
-		if (this.joystick.properties.up) {
-            velocity = -1;
-        }
-        if (this.joystick.properties.down) {
-            velocity = 1;
-        }
-        this.player.setVelocity(velocity);
-
-        if (this.buttonA.isDown) {
-            this.fire();
-        }
+      if (this.buttonA.isDown) {
+		   this.fire();
+      }
 
 		this.player.update();
 		let playerVel = this.player.vel;
@@ -100,8 +99,6 @@ class Game {
 		for (let p of this.players.values()) {
 			p.update();
 		}
-
-      this.characterController();
 	}
 
 	render() {
@@ -115,22 +112,12 @@ class Game {
             y: this.player.getTargetY()
         };
         log('click to ' + JSON.stringify(msg));
-        this.socket.emit("move", JSON.stringify(msg));
 
         this.addPoint(700, this.player.getTargetY());
 	}
 
-    characterController() {
-        if (this.pg.input.keyboard.isDown(Phaser.Keyboard.W) || this.keyboard.up.isDown) {
-            this.player.setVelocity(-1);
-        }
-        if (this.pg.input.keyboard.isDown(Phaser.Keyboard.S) || this.keyboard.down.isDown) {
-            this.player.setVelocity(1);
-        }
-    }
-
 	onTick(msg) {
-		//log("tick " + msg);
+		log("tick " + msg);
 
 		if (!this.player) {
 			return;
@@ -140,14 +127,15 @@ class Game {
 		for (let p of tickInfo.players) {
 			if (p.id === this.player.id) {
 				this.player.posX = p.pos.x;
+				this.player.sprite.y = p.pos.y;
 			}
 		}
 	}
 
-    initVirtualGamepad() {
-        let gamepad = this.pg.plugins.add(Phaser.Plugin.VirtualGamepad);
-        this.joystick = gamepad.addJoystick(90, this.pg.height - 90, 0.75, 'gamepad');
-        this.buttonA = gamepad.addButton(this.pg.width - 90, this.pg.height - 90, 0.75, 'gamepad');
+   initVirtualGamepad() {
+		let gamepad = this.pg.plugins.add(Phaser.Plugin.VirtualGamepad);
+		this.joystick = gamepad.addJoystick(90, this.pg.height - 90, 0.75, 'gamepad');
+		this.buttonA = gamepad.addButton(this.pg.width - 90, this.pg.height - 90, 0.75, 'gamepad');
     }
 
 	onPlayerConnected(msg) {
