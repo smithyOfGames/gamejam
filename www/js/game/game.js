@@ -1,29 +1,32 @@
-'use strict'
+'use strict';
 
 class Game {
 	constructor(contanerName, playerName) {
-		log('constructor')
+		log('constructor');
 
-		this.initNetwork()
+        this.initNetwork();
 
-	   this.pg = new Phaser.Game(
-	      800, 600,
-	      Phaser.AUTO,
-	      contanerName,
+		this.pg = new Phaser.Game(
+			800, 600,
+			Phaser.AUTO,
+			contanerName,
 			{
 				preload: ()=> this.preload(),
 				create: ()=> this.create(),
 				update: ()=> this.update(),
 				render: ()=> this.render()
 			}
-	   );
+		);
 
 		this.playerName = playerName;
 		this.player = null;
 		this.playerRoad = null;
-
+		this.pad = null;
+		this.stick = null;
+		this.buttonA = null;
+		this.keyboard = null;
+		this.fireButton = null;
 		this.points = new Set();
-
 	}
 
 	initNetwork() {
@@ -35,34 +38,51 @@ class Game {
 	}
 
 	onConnect() {
-		setTimeout(10); // время для загрузки фазера
+		if (this.player) {
+            this.player.id = this.socket.id;
+        }
 	}
 
 	preload() {
 		this.pg.time.advancedTiming = true;
 		this.pg.time.desiredFps = 60;
 
-	   //this.pg.load.image('sky', 'assets/sky.png');
-	   //this.pg.load.image('ground', 'assets/platform.png');
+        this.pg.load.atlas('generic', 'assets/virtualjoystick/generic-joystick.png', 'assets/virtualjoystick/generic-joystick.json');
 		this.pg.load.image('star', 'assets/star.png');
 		this.pg.load.image('road', 'assets/road.png');
 		this.pg.load.image('car', 'assets/car60.png');
-	   //this.pg.load.spritesheet('dude', 'assets/dude.png', 32, 48);
 	}
 
 	create() {
-		this.playerRoad = new Road(this.pg);
-		this.pg.input.onDown.add(this.onInputDown, this);
-		this.player = new Player(this.pg, this.socket.id, this.playerName);
-		this.socket.emit("setPlayerName", this.player.name)
+	   	this.playerRoad = new Road(this.pg);
+        this.player = new Player(this.pg, this.socket.id, this.playerName);
+        this.socket.emit("setPlayerName", this.player.name);
 
-		log("setPlayerName " + this.playerName)
-		log("game created")
+        this.pad = this.pg.plugins.add(Phaser.VirtualJoystick);
+
+        this.stick = this.pad.addStick(0, 0, 200, 'generic');
+        this.stick.scale = 0.7;
+        this.stick.alignBottomLeft(20);
+        this.stick.motionLock = Phaser.VirtualJoystick.VERTICAL;
+
+        this.buttonA = this.pad.addButton(500, 520, 'generic', 'button1-up', 'button1-down');
+        this.buttonA.onDown.add(this.fire, this);
+        this.buttonA.alignBottomRight(20);
+
+        this.keyboard = this.pg.input.keyboard.createCursorKeys();
+        this.fireButton = this.pg.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+
+        this.fireButton.onDown.add(this.fire, this);
+
+		log("game created");
 	}
 
 	update() {
-		let y = Math.max(15, Math.min(365, this.pg.input.y));
-		this.player.setTargetDirection(y);
+		let velocity = 0;
+        if (this.stick.isDown) {
+            velocity = this.stick.forceY;
+        }
+        this.player.setVelocity(velocity);
 		this.player.update();
 		let playerVel = this.player.vel;
 
@@ -70,27 +90,37 @@ class Game {
 		this.playerRoad.update();
 
 		for (let p of this.points) {
-			p.vel = playerVel // все предметы на дороге (движутся со скоростью игрока ему навстресу)
+			p.vel = playerVel; // все предметы на дороге (движутся со скоростью игрока ему навстресу)
 			p.update(); // TODO передать скорость дороги
 		}
+
+        this.characterController();
 	}
 
 	render() {
-	   this.pg.debug.cameraInfo(this.pg.camera, 8, 500);
+	    this.pg.debug.cameraInfo(this.pg.camera, 8, 500);
 		this.pg.debug.text('fps: ' + (this.pg.time.fps || '--'), 700, 570, "#00ff00");
 	}
 
-	onInputDown(pointer) {
-		// pointer will contain the pointer that activated this event
-		let msg = {
-			x: pointer.x,
-			y: pointer.y
-		}
-		log('click to ' + JSON.stringify(msg))
-		this.socket.emit("move", JSON.stringify(msg))
+    fire() {
+        let msg = {
+            x: 700,
+            y: this.player.getTargetY()
+        };
+        log('click to ' + JSON.stringify(msg));
+        this.socket.emit("move", JSON.stringify(msg));
 
-		this.addPoint(pointer.x, pointer.y);
+        this.addPoint(700, this.player.getTargetY());
 	}
+
+    characterController() {
+        if (this.pg.input.keyboard.isDown(Phaser.Keyboard.W) || this.keyboard.up.isDown) {
+            this.player.setVelocity(-1);
+        }
+        if (this.pg.input.keyboard.isDown(Phaser.Keyboard.S) || this.keyboard.down.isDown) {
+            this.player.setVelocity(1);
+        }
+    }
 
 	onTick(msg) {
 		log("tick " + msg);
@@ -101,7 +131,8 @@ class Game {
 
 		let tickInfo = JSON.parse(msg);
 		for (let p of tickInfo.players) {
-			if (p.id == this.player.id) {
+			log(this.player.id);
+			if (p.id === this.player.id) {
 				this.player.posX = p.pos.x;
 			}
 		}
