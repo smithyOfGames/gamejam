@@ -17,8 +17,6 @@ class Game {
         this.fireButton = null;
         this.points = new Set();
         this.players = new Map();
-
-        log("Game - constructor()");
     }
 
     create() {
@@ -42,8 +40,6 @@ class Game {
         let btnUp = pgame.input.keyboard.addKey(Phaser.Keyboard.R);
         btnUp.onDown.add(()=>this.socket.emit("move", "up"), this);
         btnUp.onUp.add(()=>this.socket.emit("move", "stop"), this);
-
-        log("Game - create()");
     }
 
     update() {
@@ -74,8 +70,6 @@ class Game {
         for (let p of this.players.values()) {
             p.update();
         }
-
-        log("Game - update()");
     }
 
     onConnect() {
