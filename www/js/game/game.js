@@ -29,7 +29,7 @@ class Game {
         btnDown.onDown.add(()=>this.socket.emit("move", "down"), this);
         btnDown.onUp.add(()=>this.socket.emit("move", "stop"), this);
 
-        let btnUp = pgame.input.keyboard.addKey(Phaser.Keyboard.R);
+        let btnUp = pgame.input.keyboard.addKey(Phaser.Keyboard.W);
         btnUp.onDown.add(()=>this.socket.emit("move", "up"), this);
         btnUp.onUp.add(()=>this.socket.emit("move", "stop"), this);
     }
@@ -84,18 +84,6 @@ class Game {
                 this.player.sprite.y = p.pos.y;
             }
         }
-    }
-
-    onPlayerConnected(msg) {
-        log("connected player, id: " + msg);
-        let info = JSON.parse(msg);
-        let p = new Player(pgame, info.id, "user");
-        this.players.set(info.id, p);
-    }
-
-    onPlayerDisconnected(msg) {
-        log("disconnected player, id: " + msg);
-        this.players.delete(msg);
     }
 
     fire() {
