@@ -64,6 +64,16 @@ func (self *Game) AddPlayer(so socketio.Socket) {
 		//log.Info("emit:", so.Emit("chat message", msg))
 		//so.BroadcastTo("chat", "chat message", msg)
 		log.Infof("move cmd: %v", msg)
+		p := self.players[so]
+
+		switch msg {
+		case "down":
+			p.Vel.Y = 100
+		case "up":
+			p.Vel.Y = -100
+		case "stop":
+			p.Vel.Y = 0
+		}
 	})
 
 	so.On("setPlayerName", func(msg string) {

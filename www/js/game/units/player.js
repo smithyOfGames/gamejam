@@ -13,9 +13,7 @@ class Player {
 		this.vel = 0; // скорость
 		this.targetY = 100;
 		this.sprite = phaserGame.add.sprite(100, 100, 'car');
-        phaserGame.physics.arcade.enable(this.sprite);
 		this.sprite.anchor.set(0.5);
-
 	}
 
 	getTargetY() {
