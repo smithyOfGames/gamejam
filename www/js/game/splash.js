@@ -31,7 +31,10 @@ class Splash {
         pgame.load.image('menu_bg', 'assets/images/menu_bg.jpg');
         pgame.load.image('barrel', 'assets/images/barrel.png');
         pgame.load.image('water', 'assets/images/water.png');
-        pgame.load.image('ship', 'assets/images/ship2_red.png');
+        pgame.load.image('red', 'assets/images/ship2_red.png');
+        pgame.load.image('blue', 'assets/images/ship2_blue.png');
+        pgame.load.image('green', 'assets/images/ship2_green.png');
+        pgame.load.image('yellow', 'assets/images/ship2_yellow.png');
     }
 
     create() {

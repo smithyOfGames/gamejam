@@ -5,14 +5,13 @@ const maxPlayerY = 365;
 const maxSpeed = 200;
 
 class Player {
-    constructor(id, name) {
+    constructor(phaserGame, id, name, color) {
         this.id = id;
         this.name = name;
         this.posX = 0;
         this.prevPosX = 0;
-        this.vel = 0; // скорость
-        this.targetY = 100;
-        this.sprite = pgame.add.sprite(100, 100, 'ship');
+        this.vel = 0;
+        this.sprite = phaserGame.add.sprite(100, 100, color);
         this.sprite.anchor.set(0.5);
     }
 
