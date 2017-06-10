@@ -26,6 +26,7 @@ class Game {
 		this.keyboard = null;
 		this.fireButton = null;
 		this.points = new Set();
+		this.players = new Map();
 	}
 
 	initNetwork() {
@@ -46,10 +47,10 @@ class Game {
 		this.pg.time.advancedTiming = true;
 		this.pg.time.desiredFps = 60;
 
-        this.pg.load.atlas('gamepad', 'assets/virtualjoystick/atlas.png', 'assets/virtualjoystick/atlas.json');
-		this.pg.load.image('star', 'assets/star.png');
-		this.pg.load.image('road', 'assets/road.png');
-		this.pg.load.image('car', 'assets/car60.png');
+      this.pg.load.atlas('gamepad', 'assets/virtualjoystick/atlas.png', 'assets/virtualjoystick/atlas.json');
+		this.pg.load.image('star', 'assets/images/star.png');
+		this.pg.load.image('road', 'assets/images/road.png');
+		this.pg.load.image('car', 'assets/images/car60.png');
 
 		this.pg.load.audio('taverna', ['assets/audio/taverna.mp3', 'assets/audio/taverna.ogg']);
 		this.pg.load.audio('game', ['assets/audio/game.mp3', 'assets/audio/game.ogg']);
@@ -59,7 +60,7 @@ class Game {
 		let music = this.pg.add.audio('game');
 		music.play();
 
-        this.initVirtualGamepad();
+      this.initVirtualGamepad();
 		this.playerRoad = new Road(this.pg);
 		this.player = new Player(this.pg, this.socket.id, this.playerName);
 		this.socket.emit("setPlayerName", this.player.name);
@@ -96,7 +97,11 @@ class Game {
 			p.update(); // TODO передать скорость дороги
 		}
 
-        this.characterController();
+		for (let p of this.players.values()) {
+			p.update();
+		}
+
+      this.characterController();
 	}
 
 	render() {
@@ -125,7 +130,7 @@ class Game {
     }
 
 	onTick(msg) {
-		log("tick " + msg);
+		//log("tick " + msg);
 
 		if (!this.player) {
 			return;
@@ -133,7 +138,6 @@ class Game {
 
 		let tickInfo = JSON.parse(msg);
 		for (let p of tickInfo.players) {
-			log(this.player.id);
 			if (p.id === this.player.id) {
 				this.player.posX = p.pos.x;
 			}
@@ -148,10 +152,14 @@ class Game {
 
 	onPlayerConnected(msg) {
 		log("connected player, id: " + msg);
+		let info = JSON.parse(msg);
+		let p = new Player(this.pg, info.id, "user");
+		this.players.set(info.id, p);
 	}
 
 	onPlayerDisconnected(msg) {
 		log("disconnected player, id: " + msg);
+		this.players.delete(msg);
 	}
 
 	addPoint(x, y) {

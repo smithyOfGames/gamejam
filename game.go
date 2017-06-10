@@ -73,7 +73,13 @@ func (self *Game) AddPlayer(so socketio.Socket) {
 
 		self.players[so].Name = msg
 
-		so.BroadcastTo(_GAME_ROOM, "playerConnected", player.Id)
+		info := struct {
+			Id string `json:"id"`
+		}{so.Id()}
+
+		buf, _ := json.Marshal(info)
+
+		so.BroadcastTo(_GAME_ROOM, "playerConnected", string(buf))
 	})
 
 	so.On("disconnection", func() {
