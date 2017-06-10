@@ -13,6 +13,6 @@ nbproject
 Thumbs.db
 
 # Mac DS_Store Files
-.DS_Store
+*.DS_Store*
 
 /deploy.sh
