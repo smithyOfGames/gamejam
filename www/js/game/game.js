@@ -21,8 +21,7 @@ class Game {
 		this.playerName = playerName;
 		this.player = null;
 		this.playerRoad = null;
-		this.pad = null;
-		this.stick = null;
+		this.joystick = null;
 		this.buttonA = null;
 		this.keyboard = null;
 		this.fireButton = null;
@@ -44,37 +43,26 @@ class Game {
 	}
 
 	preload() {
-		this.pg.load.atlas('generic', 'assets/virtualjoystick/generic-joystick.png', 'assets/virtualjoystick/generic-joystick.json');
-
 		this.pg.time.advancedTiming = true;
 		this.pg.time.desiredFps = 60;
 
-		this.pg.load.image('star', 'assets/images/star.png');
-		this.pg.load.image('road', 'assets/images/road.png');
-		this.pg.load.image('car', 'assets/images/car60.png');
+        this.pg.load.atlas('gamepad', 'assets/virtualjoystick/atlas.png', 'assets/virtualjoystick/atlas.json');
+		this.pg.load.image('star', 'assets/star.png');
+		this.pg.load.image('road', 'assets/road.png');
+		this.pg.load.image('car', 'assets/car60.png');
 
-		 this.pg.load.audio('taverna', ['assets/audio/taverna.mp3', 'assets/audio/taverna.ogg']);
-		 this.pg.load.audio('game', ['assets/audio/game.mp3', 'assets/audio/game.ogg']);
+		this.pg.load.audio('taverna', ['assets/audio/taverna.mp3', 'assets/audio/taverna.ogg']);
+		this.pg.load.audio('game', ['assets/audio/game.mp3', 'assets/audio/game.ogg']);
 	}
 
 	create() {
-		var music = this.pg.add.audio('game');
+		let music = this.pg.add.audio('game');
 		music.play();
 
+        this.initVirtualGamepad();
 		this.playerRoad = new Road(this.pg);
 		this.player = new Player(this.pg, this.socket.id, this.playerName);
 		this.socket.emit("setPlayerName", this.player.name);
-
-		this.pad = this.pg.plugins.add(Phaser.VirtualJoystick);
-
-		this.stick = this.pad.addStick(0, 0, 200, 'generic');
-		this.stick.scale = 0.7;
-		this.stick.alignBottomLeft(20);
-		this.stick.motionLock = Phaser.VirtualJoystick.VERTICAL;
-
-		this.buttonA = this.pad.addButton(500, 520, 'generic', 'button1-up', 'button1-down');
-		this.buttonA.onDown.add(this.fire, this);
-		this.buttonA.alignBottomRight(20);
 
 		this.keyboard = this.pg.input.keyboard.createCursorKeys();
 		this.fireButton = this.pg.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
@@ -84,11 +72,19 @@ class Game {
 	}
 
 	update() {
-		let velocity = 0;
-        if (this.stick.isDown) {
-            velocity = this.stick.forceY;
+        let velocity = 0;
+		if (this.joystick.properties.up) {
+            velocity = -1;
+        }
+        if (this.joystick.properties.down) {
+            velocity = 1;
         }
         this.player.setVelocity(velocity);
+
+        if (this.buttonA.isDown) {
+            this.fire();
+        }
+
 		this.player.update();
 		let playerVel = this.player.vel;
 
@@ -143,6 +139,12 @@ class Game {
 			}
 		}
 	}
+
+    initVirtualGamepad() {
+        let gamepad = this.pg.plugins.add(Phaser.Plugin.VirtualGamepad);
+        this.joystick = gamepad.addJoystick(90, this.pg.height - 90, 0.75, 'gamepad');
+        this.buttonA = gamepad.addButton(this.pg.width - 90, this.pg.height - 90, 0.75, 'gamepad');
+    }
 
 	onPlayerConnected(msg) {
 		log("connected player, id: " + msg);
