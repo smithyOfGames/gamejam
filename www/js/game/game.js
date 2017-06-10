@@ -44,6 +44,8 @@ class Game {
 	}
 
 	preload() {
+		this.pg.load.atlas('generic', 'assets/virtualjoystick/generic-joystick.png', 'assets/virtualjoystick/generic-joystick.json');
+
 		this.pg.time.advancedTiming = true;
 		this.pg.time.desiredFps = 60;
 
