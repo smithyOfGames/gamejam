@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+	<head lang="en">
+		<meta charset="UTF-8">
+		<title></title>
+
+		<script src="/js/lib/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="></script>
+	   <script src="/js/lib/socket.io-1.4.5.js"></script>
+		<!--script src="/js/lib/phaser.min-2.8.0.js"></script-->
+		<script src="/js/lib/phaser-2.8.0.js"></script>
+
+		<script src="/js/game/point.js"></script>
+		<script src="/js/game/player.js"></script>
+		<script src="/js/game/road.js"></script>
+		<script src="/js/game/game.js"></script>
+
+		<script>
+			'use strict'
+
+			var logData = []
+			var logView
+
+			function log(msg) {
+				if (logData.length == 50) {
+					logData.shift()
+				}
+				logData.push(msg)
+				logView.val(logData.join('\n'));
+			}
+
+			$(document).ready(function() {
+				// --- logging -----------------------------------------------
+				let command = $("#command");
+				logView = $("#logView");
+
+				$("#sendCommandButton").click(function(){
+					log("send data")
+				});
+
+				let game = new Game('gameView')
+			});
+		</script>
+	</head>
+	<body>
+		<table>
+			<tr>
+				<td><div id="gameView"></div></td>
+				<td valign="top">
+					<input type="text" id="command" name="command" value="">
+					<button id="sendCommandButton">Send</button>
+					<br>
+					<textarea id="logView" rows="10" cols="50" style="height: 500px"></textarea>
+				</td>
+			</tr>
+		</table>
+	</body>
+</html>

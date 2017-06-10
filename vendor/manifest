@@ -1,0 +1,29 @@
+{
+	"version": 0,
+	"dependencies": [
+		{
+			"importpath": "github.com/googollee/go-engine.io",
+			"repository": "https://github.com/googollee/go-engine.io",
+			"vcs": "git",
+			"revision": "80ae0e43aca17b4c5a6834999d0f2eaa16b9afda",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/googollee/go-socket.io",
+			"repository": "https://github.com/googollee/go-socket.io",
+			"vcs": "git",
+			"revision": "5447e71f36d394766bf855d5714a487596809f0d",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/gorilla/websocket",
+			"repository": "https://github.com/gorilla/websocket",
+			"vcs": "git",
+			"revision": "a91eba7f97777409bc2c443f5534d41dd20c5720",
+			"branch": "master",
+			"notests": true
+		}
+	]
+}
