@@ -4,7 +4,7 @@ class Game {
 	constructor(contanerName, playerName) {
 		log('constructor');
 
-        this.initNetwork();
+		this.initNetwork();
 
 		this.pg = new Phaser.Game(
 			800, 600,
@@ -39,8 +39,8 @@ class Game {
 
 	onConnect() {
 		if (this.player) {
-            this.player.id = this.socket.id;
-        }
+			this.player.id = this.socket.id;
+		}
 	}
 
 	preload() {
@@ -53,8 +53,8 @@ class Game {
 		this.pg.load.image('road', 'assets/images/road.png');
 		this.pg.load.image('car', 'assets/images/car60.png');
 
-		 this.pg.load.audio('taverna', ['assets/audio/taverna.mp3', 'assets/audio/taverna.ogg']);
-		 this.pg.load.audio('game', ['assets/audio/game.mp3', 'assets/audio/game.ogg']);
+		this.pg.load.audio('taverna', ['assets/audio/taverna.mp3', 'assets/audio/taverna.ogg']);
+		this.pg.load.audio('game', ['assets/audio/game.mp3', 'assets/audio/game.ogg']);
 	}
 
 	create() {
