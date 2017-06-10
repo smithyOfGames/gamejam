@@ -24,6 +24,8 @@ type Pos struct {
 type PlayerInfo struct {
 	Id  string `json:"id"`
 	Pos Pos    `json:"pos"`
+	Name string `json:"name"`
+	Color string `json:"color"`
 	//TargetY int
 	//Vel int
 }
@@ -49,16 +51,15 @@ func NewGame(server *socketio.Server) *Game {
 }
 
 func (self *Game) AddPlayer(so socketio.Socket) {
-	player := Player{
-		Id:      so.Id(),
-		Vel:     Vec2{X: 250, Y: 0},
-		Pos:     Vec2{X: 100, Y: 100},
-		TargetY: 100,
-	}
-	log.Debug("set player id: ", so.Id())
-	self.players[so] = &player
+	so.On("joinNewPlayer", func(playerName string) {
+		player, err := NewPlayer(so.Id(), playerName)
+		if err == nil {
+			log.Debug("set player id: ", so.Id())
+			self.players[so] = player
 
-	so.Join(_GAME_ROOM)
+			so.Join(_GAME_ROOM)
+		}
+	})
 
 	so.On("move", func(msg string) {
 		//log.Info("emit:", so.Emit("chat message", msg))
@@ -76,29 +77,15 @@ func (self *Game) AddPlayer(so socketio.Socket) {
 		}
 	})
 
-	so.On("setPlayerName", func(msg string) {
-		//log.Info("emit:", so.Emit("chat message", msg))
-		//so.BroadcastTo("chat", "chat message", msg)
-		log.Infof("name cmd: %v", msg)
-
-		self.players[so].Name = msg
-
-		info := struct {
-			Id string `json:"id"`
-		}{so.Id()}
-
-		buf, _ := json.Marshal(info)
-
-		so.BroadcastTo(_GAME_ROOM, "playerConnected", string(buf))
-	})
-
 	so.On("disconnection", func() {
 		log.Info("on disconnect")
 
 		// TODO сделать безопасно (параллельный доступ!!!)
-		player := self.players[so]
-		delete(self.players, so)
-		so.BroadcastTo(_GAME_ROOM, "playerDisconnected", player.Id)
+		player, ok := self.players[so]
+		if ok {
+			delete(self.players, so)
+			so.BroadcastTo(_GAME_ROOM, "playerDisconnected", player.Id)
+		}
 	})
 }
 
@@ -126,6 +113,8 @@ func (self *Game) Loop() {
 			players = append(players, PlayerInfo{
 				Id:  p.Id,
 				Pos: Pos{int(p.Pos.X), int(p.Pos.Y)},
+				Name: p.Name,
+				Color: p.Color,
 			})
 		}
 
