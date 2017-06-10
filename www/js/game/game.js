@@ -1,106 +1,132 @@
-'use strict'
+'use strict';
 
 class Game {
-	constructor(contanerName) {
-		log('constructor')
+    constructor() {
+        this.socket = io.connect(window.location.host, {path: "/ws/", transports: ['websocket']});
+        this.socket.on('connect', () => this.onConnect());
+        this.socket.on('tick', (msg)=>this.onTick(msg));
+        this.socket.on('playerConnected', (msg)=>this.onPlayerConnected(msg));
+        this.socket.on('playerDisconnected', (msg)=>this.onPlayerDisconnected(msg));
 
-	   this.pg = new Phaser.Game(
-	      800, 600,
-	      Phaser.AUTO,
-	      contanerName,
-			{
-				preload: ()=> this.preload(),
-				create: ()=> this.create(),
-				update: ()=> this.update(),
-				render: ()=> this.render()
-			}
-	   );
+        this.playerName = "player123";
+        this.player = null;
+        this.playerRoad = null;
+        this.joystick = null;
+        this.buttonA = null;
+        this.keyboard = null;
+        this.fireButton = null;
+        this.points = new Set();
+        this.players = new Map();
 
-		this.player = null;
-		this.playerRoad = null;
+        log("Game - constructor()");
+    }
 
-		this.points = new Set();
-	}
+    create() {
+        let gamepad = pgame.plugins.add(Phaser.Plugin.VirtualGamepad);
+        this.joystick = gamepad.addJoystick(90, pgame.height - 90, 0.75, 'gamepad');
+        this.buttonA = gamepad.addButton(pgame.width - 90, pgame.height - 90, 0.75, 'gamepad');
 
-	initNetwork() {
-		this.socket = io.connect(window.location.host, {path: "/ws/", transports: ['websocket']});
+        this.playerRoad = new Road();
+        this.player = new Player(this.socket.id);
 
-		this.socket.on('tick', this.onTick);
-		this.socket.on('playerConnected', this.onPlayerConnected);
-		this.socket.on('playerDisconnected', this.onPlayerDisconnected);
-	}
+        this.socket.emit("setPlayerName", this.player.name);
 
-	preload() {
-		this.pg.time.advancedTiming = true;
-		this.pg.time.desiredFps = 60;
+        this.keyboard = pgame.input.keyboard.createCursorKeys();
+        this.fireButton = pgame.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+        this.fireButton.onDown.add(this.fire, this);
 
-	   //this.pg.load.image('sky', 'assets/sky.png');
-	   //this.pg.load.image('ground', 'assets/platform.png');
-		this.pg.load.image('star', 'assets/star.png');
-		this.pg.load.image('road', 'assets/road.png');
-		this.pg.load.image('car', 'assets/car60.png');
-	   //this.pg.load.spritesheet('dude', 'assets/dude.png', 32, 48);
-	}
+        let btnDown = pgame.input.keyboard.addKey(Phaser.Keyboard.F);
+        btnDown.onDown.add(()=>this.socket.emit("move", "down"), this);
+        btnDown.onUp.add(()=>this.socket.emit("move", "stop"), this);
 
-	create() {
-	   //this.pg.add.sprite(0, 0, 'sky'); //  A simple background for our game
+        let btnUp = pgame.input.keyboard.addKey(Phaser.Keyboard.R);
+        btnUp.onDown.add(()=>this.socket.emit("move", "up"), this);
+        btnUp.onUp.add(()=>this.socket.emit("move", "stop"), this);
 
-		this.playerRoad = new Road(this.pg);
+        log("Game - create()");
+    }
 
-		this.pg.input.onDown.add(this.onInputDown, this);
-		this.player = new Player(this.pg);
+    update() {
+        let velocity = 0;
 
-		this.initNetwork()
+        if (this.joystick.properties.up) {
+                velocity = -1;
+            }
+        if (this.joystick.properties.down) {
+            velocity = 1;
+        }
 
-		log("game created")
-	}
+        if (this.buttonA.isDown) {
+            this.fire();
+        }
 
-	update() {
-		let y = Math.max(15, Math.min(365, this.pg.input.y));
-		this.player.setTargetDirection(y);
+        this.player.update();
+        let playerVel = this.player.vel;
 
-		this.player.update();
-		this.playerRoad.update();
-		for (let p of this.points) {
-			p.update(); // TODO передать скорость дороги
-		}
-	}
+        this.playerRoad.vel = playerVel;
+        this.playerRoad.update();
 
-	render() {
-	   this.pg.debug.cameraInfo(this.pg.camera, 8, 500);
-		this.pg.debug.text('fps: ' + (this.pg.time.fps || '--'), 700, 570, "#00ff00");
-	}
+        for (let p of this.points) {
+            p.vel = playerVel; // все предметы на дороге (движутся со скоростью игрока ему навстресу)
+            p.update(); // TODO передать скорость дороги
+        }
 
-	onInputDown(pointer) {
-		// pointer will contain the pointer that activated this event
-		let msg = {
-			x: pointer.x,
-			y: pointer.y
-		}
-		log('click to ' + JSON.stringify(msg))
-		this.socket.emit("move", JSON.stringify(msg))
+        for (let p of this.players.values()) {
+            p.update();
+        }
 
-		this.addPoint(pointer.x, pointer.y);
-	}
+        log("Game - update()");
+    }
 
-	onTick(msg) {
-		//log("tick " + msg);
-	}
+    onConnect() {
+        if (this.player) {
+            this.player.id = this.socket.id;
+        }
+    }
 
-	onPlayerConnected(msg) {
-		log("connected player, id: " + msg);
-	}
+    onTick(msg) {
+        if (!this.player) {
+            return;
+        }
 
-	onPlayerDisconnected(msg) {
-		log("disconnected player, id: " + msg);
-	}
+        let tickInfo = JSON.parse(msg);
+        for (let p of tickInfo.players) {
+            if (p.id === this.player.id) {
+                this.player.posX = p.pos.x;
+                this.player.sprite.y = p.pos.y;
+            }
+        }
+    }
 
-	addPoint(x, y) {
-		let p = new ClickPoint(this, x, y)
-		this.points.add(p);
-	}
+    onPlayerConnected(msg) {
+        log("connected player, id: " + msg);
+        let info = JSON.parse(msg);
+        let p = new Player(pgame, info.id, "user");
+        this.players.set(info.id, p);
+    }
 
-	delPoint(p) {
-		this.points.delete(p);
-	}
+    onPlayerDisconnected(msg) {
+        log("disconnected player, id: " + msg);
+        this.players.delete(msg);
+    }
+
+    fire() {
+        let msg = {
+        x: 700,
+        y: this.player.getTargetY()
+        };
+        log('click to ' + JSON.stringify(msg));
+        this.socket.emit("move", JSON.stringify(msg));
+
+        this.addPoint(700, this.player.getTargetY());
+    }
+
+    addPoint(x, y) {
+        let p = new ClickPoint(this, x, y)
+        this.points.add(p);
+    }
+
+    delPoint(p) {
+        this.points.delete(p);
+    }
 }

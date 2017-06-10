@@ -5,14 +5,10 @@
 		<title></title>
 
 		<script src="/js/lib/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="></script>
-	   <script src="/js/lib/socket.io-1.4.5.js"></script>
-		<!--script src="/js/lib/phaser.min-2.8.0.js"></script-->
+		<script src="/js/lib/socket.io-1.4.5.js"></script>
 		<script src="/js/lib/phaser-2.8.0.js"></script>
-
-		<script src="/js/game/point.js"></script>
-		<script src="/js/game/player.js"></script>
-		<script src="/js/game/road.js"></script>
-		<script src="/js/game/game.js"></script>
+		<script src="/js/lib/phaser-plugin-virtual-gamepad.js"></script>
+		<script src="/js/game/main.js"></script>
 
 		<script>
 			'use strict'
@@ -29,15 +25,14 @@
 			}
 
 			$(document).ready(function() {
-				// --- logging -----------------------------------------------
 				let command = $("#command");
 				logView = $("#logView");
 
 				$("#sendCommandButton").click(function(){
-					log("send data")
+					log("send data");
 				});
 
-				let game = new Game('gameView')
+				let main = new Main('gameView');
 			});
 		</script>
 	</head>
