@@ -5,12 +5,17 @@ const maxPlayerY = 365;
 const maxSpeed = 200;
 
 class Player {
-	constructor(phaserGame) {
-		this.vel = 10; // скорость
+	constructor(phaserGame, id, name) {
+		this.id = id;
+		this.name = name;
+		this.posX = 0;
+		this.prevPosX = 0;
+		this.vel = 0; // скорость
 		this.targetY = 100;
 		this.sprite = phaserGame.add.sprite(100, 100, 'car');
         phaserGame.physics.arcade.enable(this.sprite);
 		this.sprite.anchor.set(0.5);
+
 	}
 
 	getTargetY() {
@@ -22,10 +27,12 @@ class Player {
 	}
 
 	update() {
+		this.vel = this.posX - this.prevPosX;
+		this.prevPosX = this.posX;
+
         if (this.sprite.y < minPlayerY) {
             this.sprite.y = minPlayerY;
         }
-
         if (this.sprite.y > maxPlayerY) {
             this.sprite.y = maxPlayerY;
         }

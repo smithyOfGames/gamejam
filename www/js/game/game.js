@@ -1,8 +1,10 @@
 'use strict';
 
 class Game {
-	constructor(contanerName) {
+	constructor(contanerName, playerName) {
 		log('constructor');
+
+        this.initNetwork();
 
 		this.pg = new Phaser.Game(
 			800, 600,
@@ -16,6 +18,7 @@ class Game {
 			}
 		);
 
+		this.playerName = playerName;
 		this.player = null;
 		this.playerRoad = null;
 		this.pad = null;
@@ -24,15 +27,20 @@ class Game {
 		this.keyboard = null;
 		this.fireButton = null;
 		this.points = new Set();
-		this.spaceOnDown = false;
 	}
 
 	initNetwork() {
 		this.socket = io.connect(window.location.host, {path: "/ws/", transports: ['websocket']});
+		this.socket.on('connect', () => this.onConnect());
+		this.socket.on('tick', (msg)=>this.onTick(msg));
+		this.socket.on('playerConnected', (msg)=>this.onPlayerConnected(msg));
+		this.socket.on('playerDisconnected', (msg)=>this.onPlayerDisconnected(msg));
+	}
 
-		this.socket.on('tick', this.onTick);
-		this.socket.on('playerConnected', this.onPlayerConnected);
-		this.socket.on('playerDisconnected', this.onPlayerDisconnected);
+	onConnect() {
+		if (this.player) {
+            this.player.id = this.socket.id;
+        }
 	}
 
 	preload() {
@@ -47,8 +55,8 @@ class Game {
 
 	create() {
 	   	this.playerRoad = new Road(this.pg);
-
-		this.player = new Player(this.pg);
+        this.player = new Player(this.pg, this.socket.id, this.playerName);
+        this.socket.emit("setPlayerName", this.player.name);
 
         this.pad = this.pg.plugins.add(Phaser.VirtualJoystick);
 
@@ -60,8 +68,6 @@ class Game {
         this.buttonA = this.pad.addButton(500, 520, 'generic', 'button1-up', 'button1-down');
         this.buttonA.onDown.add(this.fire, this);
         this.buttonA.alignBottomRight(20);
-
-		this.initNetwork();
 
         this.keyboard = this.pg.input.keyboard.createCursorKeys();
         this.fireButton = this.pg.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
@@ -77,10 +83,14 @@ class Game {
             velocity = this.stick.forceY;
         }
         this.player.setVelocity(velocity);
-
 		this.player.update();
+		let playerVel = this.player.vel;
+
+		this.playerRoad.vel = playerVel;
 		this.playerRoad.update();
+
 		for (let p of this.points) {
+			p.vel = playerVel; // все предметы на дороге (движутся со скоростью игрока ему навстресу)
 			p.update(); // TODO передать скорость дороги
 		}
 
@@ -113,7 +123,19 @@ class Game {
     }
 
 	onTick(msg) {
-		//log("tick " + msg);
+		log("tick " + msg);
+
+		if (!this.player) {
+			return;
+		}
+
+		let tickInfo = JSON.parse(msg);
+		for (let p of tickInfo.players) {
+			log(this.player.id);
+			if (p.id === this.player.id) {
+				this.player.posX = p.pos.x;
+			}
+		}
 	}
 
 	onPlayerConnected(msg) {
