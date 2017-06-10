@@ -72,6 +72,21 @@ func (self *Game) AddPlayer(so socketio.Socket) {
 		p.Move(msg)
 	})
 
+	so.On("collision", func(msg string) {
+		log.Infof("collision type: %v", msg)
+		p := self.players[so]
+		switch msg {
+		case "barrel":
+			go func() {
+				<-time.After(1000 * time.Millisecond)
+				p.Vel.X = 250
+			}()
+			p.Vel.X = 0
+		case "island":
+			p.Vel.X = 0
+		}
+	})
+
 	so.On("disconnection", func() {
 		log.Info("on disconnect")
 

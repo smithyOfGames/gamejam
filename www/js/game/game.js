@@ -144,7 +144,7 @@ class Game {
     }
 
     addPoint(x, y) {
-        let p = new ClickPoint(this, x, y)
+        let p = new ClickPoint(this, x, y, this.players.get(this.socket.id))
         this.points.add(p);
     }
 

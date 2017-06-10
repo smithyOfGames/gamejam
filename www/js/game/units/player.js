@@ -13,6 +13,7 @@ class Player {
         this.vel = 0;
         this.sprite = phaserGame.add.sprite(100, 100, color);
         this.sprite.anchor.set(0.5);
+        phaserGame.physics.enable(this.sprite, Phaser.Physics.ARCADE);
     }
 
     getTargetY() {

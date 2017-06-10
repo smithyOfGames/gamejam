@@ -39,6 +39,7 @@ class Splash {
         pgame.load.image('blue', 'assets/images/ship2_blue.png');
         pgame.load.image('green', 'assets/images/ship2_green.png');
         pgame.load.image('yellow', 'assets/images/ship2_yellow.png');
+        pgame.load.image('collision', 'assets/images/collision.png');
     }
 
     create() {
