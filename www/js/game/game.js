@@ -1,24 +1,15 @@
 'use strict';
 
 class Game {
-	constructor(contanerName, playerName) {
+	constructor() {
 		log('constructor');
 
 		this.initNetwork();
 
-		this.pg = new Phaser.Game(
-			800, 600,
-			Phaser.AUTO,
-			contanerName,
-			{
-				preload: ()=> this.preload(),
-				create: ()=> this.create(),
-				update: ()=> this.update(),
-				render: ()=> this.render()
-			}
-		);
+		this.pg = pgame;
+		this.pg.update = ()=> this.update();
 
-		this.playerName = playerName;
+		this.playerName = "player123";
 		this.player = null;
 		this.playerRoad = null;
 		this.joystick = null;
@@ -27,6 +18,8 @@ class Game {
 		this.fireButton = null;
 		this.points = new Set();
 		this.players = new Map();
+
+		this.create();
 	}
 
 	initNetwork() {
@@ -47,7 +40,7 @@ class Game {
 		this.pg.time.advancedTiming = true;
 		this.pg.time.desiredFps = 60;
 
-      this.pg.load.atlas('gamepad', 'assets/virtualjoystick/atlas.png', 'assets/virtualjoystick/atlas.json');
+    this.pg.load.atlas('gamepad', 'assets/virtualjoystick/atlas.png', 'assets/virtualjoystick/atlas.json');
 		this.pg.load.image('barrel', 'assets/barrel.png');
 		this.pg.load.image('water', 'assets/water.png');
 		this.pg.load.image('ship', 'assets/ship2_red.png');
@@ -57,10 +50,8 @@ class Game {
 	}
 
 	create() {
-		let music = this.pg.add.audio('game');
-		music.play();
+    this.initVirtualGamepad();
 
-      this.initVirtualGamepad();
 		this.playerRoad = new Road(this.pg);
 		this.player = new Player(this.pg, this.socket.id, this.playerName);
 		this.socket.emit("setPlayerName", this.player.name);
@@ -73,14 +64,16 @@ class Game {
 	}
 
 	update() {
-        let velocity = 0;
-		if (this.joystick.properties.up) {
-            velocity = -1;
-        }
-        if (this.joystick.properties.down) {
-            velocity = 1;
-        }
-        this.player.setVelocity(velocity);
+		log('123');
+		
+        // let velocity = 0;
+		// if (this.joystick.properties.up) {
+    //         velocity = -1;
+    //     }
+        // if (this.joystick.properties.down) {
+        //     velocity = 1;
+        // }
+        // this.player.setVelocity(velocity);
 
         if (this.buttonA.isDown) {
             this.fire();
