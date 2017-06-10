@@ -3,7 +3,7 @@
 class ClickPoint {
    constructor(game, x, y) {
       this.game = game;
-      this.sprite = game.pg.add.sprite(x, y, 'star');
+      this.sprite = game.pg.add.sprite(x, y, 'barrel');
       this.sprite.anchor.set(0.5)
       this.vel = 0; // скорость движения
    }
