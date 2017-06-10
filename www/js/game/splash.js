@@ -54,7 +54,7 @@ class Splash {
         splashMusic.play();
 
         setTimeout(function () {
-          pgame.state.start("Menu");
+            pgame.state.start("Menu");
         }, 1000);
     }
 }
