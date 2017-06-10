@@ -20,6 +20,10 @@ class Splash {
         pgame.load.audio('game', ['assets/audio/game.mp3', 'assets/audio/game.ogg']);
         pgame.load.audio('splash', ['assets/audio/splash.mp3', 'assets/audio/splash.ogg']);
 
+        pgame.load.script('CanvasInput', 'js/lib/CanvasInput.min.js');
+        pgame.load.script('Gamepad', '/js/lib/phaser-plugin-virtual-gamepad.js');
+        pgame.load.script('SocketIO', '/js/lib/socket.io-1.4.5.js');
+
         pgame.load.script('menu', 'js/game/menu.js');
         pgame.load.script('game', 'js/game/game.js');
         pgame.load.script('player', 'js/game/units/player.js');
@@ -40,6 +44,7 @@ class Splash {
     create() {
         splashMusic = pgame.add.audio('splash');
         splashMusic.loop = true;
+
         gameMusic = pgame.add.audio('game');
         gameMusic.loop = true;
 
@@ -49,7 +54,7 @@ class Splash {
         splashMusic.play();
 
         setTimeout(function () {
-          pgame.state.start("Menu");
+            pgame.state.start("Menu");
         }, 1000);
     }
 }
