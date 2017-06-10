@@ -1,25 +1,30 @@
-'use strict'
+'use strict';
 
 class Game {
 	constructor(contanerName) {
-		log('constructor')
+		log('constructor');
 
-	   this.pg = new Phaser.Game(
-	      800, 600,
-	      Phaser.AUTO,
-	      contanerName,
+		this.pg = new Phaser.Game(
+			800, 600,
+			Phaser.AUTO,
+			contanerName,
 			{
 				preload: ()=> this.preload(),
 				create: ()=> this.create(),
 				update: ()=> this.update(),
 				render: ()=> this.render()
 			}
-	   );
+		);
 
 		this.player = null;
 		this.playerRoad = null;
-
+		this.pad = null;
+		this.stick = null;
+		this.buttonA = null;
+		this.keyboard = null;
+		this.fireButton = null;
 		this.points = new Set();
+		this.spaceOnDown = false;
 	}
 
 	initNetwork() {
@@ -34,54 +39,78 @@ class Game {
 		this.pg.time.advancedTiming = true;
 		this.pg.time.desiredFps = 60;
 
-	   //this.pg.load.image('sky', 'assets/sky.png');
-	   //this.pg.load.image('ground', 'assets/platform.png');
+        this.pg.load.atlas('generic', 'assets/virtualjoystick/generic-joystick.png', 'assets/virtualjoystick/generic-joystick.json');
 		this.pg.load.image('star', 'assets/star.png');
 		this.pg.load.image('road', 'assets/road.png');
 		this.pg.load.image('car', 'assets/car60.png');
-	   //this.pg.load.spritesheet('dude', 'assets/dude.png', 32, 48);
 	}
 
 	create() {
-	   //this.pg.add.sprite(0, 0, 'sky'); //  A simple background for our game
+	   	this.playerRoad = new Road(this.pg);
 
-		this.playerRoad = new Road(this.pg);
-
-		this.pg.input.onDown.add(this.onInputDown, this);
 		this.player = new Player(this.pg);
 
-		this.initNetwork()
+        this.pad = this.pg.plugins.add(Phaser.VirtualJoystick);
 
-		log("game created")
+        this.stick = this.pad.addStick(0, 0, 200, 'generic');
+        this.stick.scale = 0.7;
+        this.stick.alignBottomLeft(20);
+        this.stick.motionLock = Phaser.VirtualJoystick.VERTICAL;
+
+        this.buttonA = this.pad.addButton(500, 520, 'generic', 'button1-up', 'button1-down');
+        this.buttonA.onDown.add(this.fire, this);
+        this.buttonA.alignBottomRight(20);
+
+		this.initNetwork();
+
+        this.keyboard = this.pg.input.keyboard.createCursorKeys();
+        this.fireButton = this.pg.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+
+        this.fireButton.onDown.add(this.fire, this);
+
+		log("game created");
 	}
 
 	update() {
-		let y = Math.max(15, Math.min(365, this.pg.input.y));
-		this.player.setTargetDirection(y);
+		let velocity = 0;
+        if (this.stick.isDown) {
+            velocity = this.stick.forceY;
+        }
+        this.player.setVelocity(velocity);
 
 		this.player.update();
 		this.playerRoad.update();
 		for (let p of this.points) {
 			p.update(); // TODO передать скорость дороги
 		}
+
+        this.characterController();
 	}
 
 	render() {
-	   this.pg.debug.cameraInfo(this.pg.camera, 8, 500);
+	    this.pg.debug.cameraInfo(this.pg.camera, 8, 500);
 		this.pg.debug.text('fps: ' + (this.pg.time.fps || '--'), 700, 570, "#00ff00");
 	}
 
-	onInputDown(pointer) {
-		// pointer will contain the pointer that activated this event
-		let msg = {
-			x: pointer.x,
-			y: pointer.y
-		}
-		log('click to ' + JSON.stringify(msg))
-		this.socket.emit("move", JSON.stringify(msg))
+    fire() {
+        let msg = {
+            x: 700,
+            y: this.player.getTargetY()
+        };
+        log('click to ' + JSON.stringify(msg));
+        this.socket.emit("move", JSON.stringify(msg));
 
-		this.addPoint(pointer.x, pointer.y);
+        this.addPoint(700, this.player.getTargetY());
 	}
+
+    characterController() {
+        if (this.pg.input.keyboard.isDown(Phaser.Keyboard.W) || this.keyboard.up.isDown) {
+            this.player.setVelocity(-1);
+        }
+        if (this.pg.input.keyboard.isDown(Phaser.Keyboard.S) || this.keyboard.down.isDown) {
+            this.player.setVelocity(1);
+        }
+    }
 
 	onTick(msg) {
 		//log("tick " + msg);
