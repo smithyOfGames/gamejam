@@ -16,6 +16,7 @@ class Road {
       u.x = v.width;
 
       this.sprites = [u, v];
+      this.vel = 0;
    }
 
    update() {
@@ -28,7 +29,8 @@ class Road {
          this.sprites[1] = u;
       }
 
-      u.x -= 5;
-      v.x -= 5;
+      u.x -= this.vel;
+      v.x -= this.vel;
+      //this.vel = 0; // не обязательно
    }
 }

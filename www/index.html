@@ -29,15 +29,27 @@
 			}
 
 			$(document).ready(function() {
+
+				//получаем имя игрока
+				let playerName = window.localStorage.getItem("playerName");
+				if (playerName=="null")
+					playerName = "";
+
+				for (;!playerName;) {
+			    	playerName = prompt("Please enter your name", "");
+				}
+			   window.localStorage.setItem("playerName", playerName);
+				//alert(playerName)
+
 				// --- logging -----------------------------------------------
 				let command = $("#command");
 				logView = $("#logView");
 
 				$("#sendCommandButton").click(function(){
-					log("send data")
+					log("send data");
 				});
 
-				let game = new Game('gameView')
+				let game = new Game('gameView', playerName);
 			});
 		</script>
 	</head>
