@@ -1,7 +1,7 @@
 package main
 
 import (
-	log "alex-shch/scout/consolelog"
+	log "smithyOfGames/gamejam/consolelog"
 
 	"net/http"
 
