@@ -12,7 +12,7 @@ class Player {
 		this.prevPosX = 0;
 		this.vel = 0; // скорость
 		this.targetY = 100;
-		this.sprite = phaserGame.add.sprite(100, 100, 'car');
+		this.sprite = phaserGame.add.sprite(100, 100, 'ship');
 		this.sprite.anchor.set(0.5);
 	}
 

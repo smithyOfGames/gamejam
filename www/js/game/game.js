@@ -47,10 +47,10 @@ class Game {
 		this.pg.time.advancedTiming = true;
 		this.pg.time.desiredFps = 60;
 
-		this.pg.load.atlas('gamepad', 'assets/virtualjoystick/atlas.png', 'assets/virtualjoystick/atlas.json');
-		this.pg.load.image('star', 'assets/images/star.png');
-		this.pg.load.image('road', 'assets/images/road.png');
-		this.pg.load.image('car', 'assets/images/car60.png');
+      this.pg.load.atlas('gamepad', 'assets/virtualjoystick/atlas.png', 'assets/virtualjoystick/atlas.json');
+		this.pg.load.image('barrel', 'assets/barrel.png');
+		this.pg.load.image('water', 'assets/water.png');
+		this.pg.load.image('ship', 'assets/ship2_red.png');
 
 		this.pg.load.audio('taverna', ['assets/audio/taverna.mp3', 'assets/audio/taverna.ogg']);
 		this.pg.load.audio('game', ['assets/audio/game.mp3', 'assets/audio/game.ogg']);
