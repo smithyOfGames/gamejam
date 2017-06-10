@@ -9,7 +9,10 @@ import (
 	"github.com/googollee/go-socket.io"
 )
 
-const _GAME_ROOM = "game"
+const (
+	_GAME_ROOM = "game"
+	maxCountPlayers int = 4
+)
 
 type Game struct {
 	server  *socketio.Server
@@ -26,8 +29,6 @@ type PlayerInfo struct {
 	Pos Pos    `json:"pos"`
 	Name string `json:"name"`
 	Color string `json:"color"`
-	//TargetY int
-	//Vel int
 }
 
 type TickInfo struct {
@@ -52,13 +53,15 @@ func NewGame(server *socketio.Server) *Game {
 
 func (self *Game) AddPlayer(so socketio.Socket) {
 	so.On("joinNewPlayer", func(playerName string) {
-		player, err := NewPlayer(so.Id(), playerName)
-		if err == nil {
-			log.Debug("set player id: ", so.Id())
-			self.players[so] = player
-
-			so.Join(_GAME_ROOM)
+		if currentPlayerNumber == maxCountPlayers {
+			return
 		}
+
+		player := NewPlayer(so.Id(), playerName)
+		log.Debug("set player id: ", so.Id())
+		self.players[so] = player
+
+		so.Join(_GAME_ROOM)
 	})
 
 	so.On("move", func(msg string) {
@@ -66,15 +69,7 @@ func (self *Game) AddPlayer(so socketio.Socket) {
 		//so.BroadcastTo("chat", "chat message", msg)
 		log.Infof("move cmd: %v", msg)
 		p := self.players[so]
-
-		switch msg {
-		case "down":
-			p.Vel.Y = 100
-		case "up":
-			p.Vel.Y = -100
-		case "stop":
-			p.Vel.Y = 0
-		}
+		p.Move(msg)
 	})
 
 	so.On("disconnection", func() {
