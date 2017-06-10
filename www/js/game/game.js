@@ -2,9 +2,11 @@
 
 class Game {
     constructor() {
-        log('constructor');
-
-		this.initNetwork();
+        this.socket = io.connect(window.location.host, {path: "/ws/", transports: ['websocket']});
+        this.socket.on('connect', () => this.onConnect());
+        this.socket.on('tick', (msg)=>this.onTick(msg));
+        this.socket.on('playerConnected', (msg)=>this.onPlayerConnected(msg));
+        this.socket.on('playerDisconnected', (msg)=>this.onPlayerDisconnected(msg));
 
         this.playerName = "player123";
         this.player = null;
@@ -15,49 +17,44 @@ class Game {
         this.fireButton = null;
         this.points = new Set();
         this.players = new Map();
-    }
 
-    initNetwork() {
-        this.socket = io.connect(window.location.host, {path: "/ws/", transports: ['websocket']});
-        this.socket.on('connect', () => this.onConnect());
-        this.socket.on('tick', (msg)=>this.onTick(msg));
-        this.socket.on('playerConnected', (msg)=>this.onPlayerConnected(msg));
-        this.socket.on('playerDisconnected', (msg)=>this.onPlayerDisconnected(msg));
-    }
-
-    onConnect() {
-        if (this.player) {
-            this.player.id = this.socket.id;
-        }
+        log("Game - constructor()");
     }
 
     create() {
-		this.pg = pgame;
+        let gamepad = pgame.plugins.add(Phaser.Plugin.VirtualGamepad);
+        this.joystick = gamepad.addJoystick(90, pgame.height - 90, 0.75, 'gamepad');
+        this.buttonA = gamepad.addButton(pgame.width - 90, pgame.height - 90, 0.75, 'gamepad');
 
-        this.initVirtualGamepad();
+        this.playerRoad = new Road();
+        this.player = new Player(this.socket.id);
 
-        this.playerRoad = new Road(this.pg);
-        this.player = new Player(this.pg, this.socket.id, this.playerName);
         this.socket.emit("setPlayerName", this.player.name);
 
-        this.keyboard = this.pg.input.keyboard.createCursorKeys();
-        this.fireButton = this.pg.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+        this.keyboard = pgame.input.keyboard.createCursorKeys();
+        this.fireButton = pgame.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
         this.fireButton.onDown.add(this.fire, this);
 
-        log("game created");
+        let btnDown = pgame.input.keyboard.addKey(Phaser.Keyboard.F);
+        btnDown.onDown.add(()=>this.socket.emit("move", "down"), this);
+        btnDown.onUp.add(()=>this.socket.emit("move", "stop"), this);
+
+        let btnUp = pgame.input.keyboard.addKey(Phaser.Keyboard.R);
+        btnUp.onDown.add(()=>this.socket.emit("move", "up"), this);
+        btnUp.onUp.add(()=>this.socket.emit("move", "stop"), this);
+
+        log("Game - create()");
     }
 
     update() {
-        log('123');
-
         let velocity = 0;
+
         if (this.joystick.properties.up) {
                 velocity = -1;
             }
         if (this.joystick.properties.down) {
             velocity = 1;
         }
-        this.player.setVelocity(velocity);
 
         if (this.buttonA.isDown) {
             this.fire();
@@ -78,7 +75,39 @@ class Game {
             p.update();
         }
 
-        this.characterController();
+        log("Game - update()");
+    }
+
+    onConnect() {
+        if (this.player) {
+            this.player.id = this.socket.id;
+        }
+    }
+
+    onTick(msg) {
+        if (!this.player) {
+            return;
+        }
+
+        let tickInfo = JSON.parse(msg);
+        for (let p of tickInfo.players) {
+            if (p.id === this.player.id) {
+                this.player.posX = p.pos.x;
+                this.player.sprite.y = p.pos.y;
+            }
+        }
+    }
+
+    onPlayerConnected(msg) {
+        log("connected player, id: " + msg);
+        let info = JSON.parse(msg);
+        let p = new Player(pgame, info.id, "user");
+        this.players.set(info.id, p);
+    }
+
+    onPlayerDisconnected(msg) {
+        log("disconnected player, id: " + msg);
+        this.players.delete(msg);
     }
 
     fire() {
@@ -90,48 +119,6 @@ class Game {
         this.socket.emit("move", JSON.stringify(msg));
 
         this.addPoint(700, this.player.getTargetY());
-    }
-
-    characterController() {
-        if (this.pg.input.keyboard.isDown(Phaser.Keyboard.W) || this.keyboard.up.isDown) {
-            this.player.setVelocity(-1);
-        }
-        if (this.pg.input.keyboard.isDown(Phaser.Keyboard.S) || this.keyboard.down.isDown) {
-            this.player.setVelocity(1);
-        }
-    }
-
-    onTick(msg) {
-        //log("tick " + msg);
-
-        if (!this.player) {
-            return;
-        }
-
-        let tickInfo = JSON.parse(msg);
-        for (let p of tickInfo.players) {
-            if (p.id === this.player.id) {
-                this.player.posX = p.pos.x;
-            }
-        }
-    }
-
-    initVirtualGamepad() {
-        let gamepad = this.pg.plugins.add(Phaser.Plugin.VirtualGamepad);
-        this.joystick = gamepad.addJoystick(90, this.pg.height - 90, 0.75, 'gamepad');
-        this.buttonA = gamepad.addButton(this.pg.width - 90, this.pg.height - 90, 0.75, 'gamepad');
-    }
-
-    onPlayerConnected(msg) {
-        log("connected player, id: " + msg);
-        let info = JSON.parse(msg);
-        let p = new Player(this.pg, info.id, "user");
-        this.players.set(info.id, p);
-    }
-
-    onPlayerDisconnected(msg) {
-        log("disconnected player, id: " + msg);
-        this.players.delete(msg);
     }
 
     addPoint(x, y) {

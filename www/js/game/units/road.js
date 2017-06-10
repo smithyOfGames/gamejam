@@ -1,16 +1,16 @@
 'use strict'
 
 class Road {
-    constructor(phaserGame) {
-        let g = phaserGame.add.group();
+    constructor() {
+        let g = pgame.add.group();
 
         const height = 380.0;
         const width = 800.0;
-        let u = phaserGame.add.sprite(0, 0, 'water');
+        let u = pgame.add.sprite(0, 0, 'water');
         u.scale.x = width / u.width;
         u.scale.y = height / u.height;
         u.x = 0;
-        let v = phaserGame.add.sprite(0, 0, 'water');
+        let v = pgame.add.sprite(0, 0, 'water');
         v.scale.x = width / v.width;
         v.scale.y = height / v.height;
         u.x = v.width;
