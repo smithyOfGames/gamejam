@@ -27,6 +27,8 @@ class Game {
 		this.fireButton = null;
 		this.points = new Set();
 		this.players = new Map();
+
+		this.fireDelay = 1000;
 	}
 
 	initNetwork() {
@@ -51,6 +53,7 @@ class Game {
 		this.pg.load.image('barrel', 'assets/barrel.png');
 		this.pg.load.image('water', 'assets/water.png');
 		this.pg.load.image('ship', 'assets/ship2_red.png');
+		this.pg.load.image('collision', 'assets/collision.png');
 
 		this.pg.load.audio('taverna', ['assets/audio/taverna.mp3', 'assets/audio/taverna.ogg']);
 		this.pg.load.audio('game', ['assets/audio/game.mp3', 'assets/audio/game.ogg']);
@@ -60,9 +63,10 @@ class Game {
 		let music = this.pg.add.audio('game');
 		music.play();
 
-      this.initVirtualGamepad();
+        this.initVirtualGamepad();
 		this.playerRoad = new Road(this.pg);
 		this.player = new Player(this.pg, this.socket.id, this.playerName);
+
 		this.socket.emit("setPlayerName", this.player.name);
 
 		this.keyboard = this.pg.input.keyboard.createCursorKeys();
@@ -107,6 +111,8 @@ class Game {
 	}
 
     fire() {
+
+
         let msg = {
             x: 700,
             y: this.player.getTargetY()
@@ -151,7 +157,7 @@ class Game {
 	}
 
 	addPoint(x, y) {
-		let p = new ClickPoint(this, x, y)
+		let p = new ClickPoint(this, x, y, this.player)
 		this.points.add(p);
 	}
 

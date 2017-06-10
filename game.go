@@ -27,10 +27,14 @@ type PlayerInfo struct {
 	//TargetY int
 	//Vel int
 }
+type IslandInfo struct {
+	Pos Pos    `json:"pos"`
+}
 
 type TickInfo struct {
 	TickId  int64        `json:"tickId"` // time?
 	Players []PlayerInfo `json:"players"`
+	Islands []IslandInfo `json:"islands"`
 }
 
 func NewGame(server *socketio.Server) *Game {
@@ -73,6 +77,21 @@ func (self *Game) AddPlayer(so socketio.Socket) {
 			p.Vel.Y = -100
 		case "stop":
 			p.Vel.Y = 0
+		}
+	})
+
+	so.On("collision", func(msg string) {
+		log.Infof("collision type: %v", msg)
+		p := self.players[so]
+		switch msg {
+			case "barrel":
+				go func() {
+					<-time.After(1000 * time.Millisecond)
+					p.Vel.X = 250
+				}()
+				p.Vel.X = 0
+			case "island":
+				p.Vel.X = 0
 		}
 	})
 
@@ -132,6 +151,7 @@ func (self *Game) Loop() {
 		msg, _ := json.Marshal(TickInfo{
 			TickId:  0,
 			Players: players,
+			//Islands: islands
 		})
 		self.server.BroadcastTo(_GAME_ROOM, "tick", string(msg))
 
