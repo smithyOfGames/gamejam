@@ -30,6 +30,8 @@ class Menu {
             this.button.useHandCursor = false;
         };
 		var callback = function (targer) {
+			splashMusic.pause();
+			gameMusic.play();
 			pgame.state.start("Game");
 		}
         this.button.inputEnabled = true;
