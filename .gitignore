@@ -1,7 +1,7 @@
 *.prof
 vendor/**
 !vendor/manifest
-/scout
+/gamejam
 
 # idea project files
 .idea

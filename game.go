@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	log "alex-shch/scout/consolelog"
+	log "smithyOfGames/gamejam/consolelog"
 
 	"github.com/googollee/go-socket.io"
 )
