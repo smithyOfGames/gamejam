@@ -5,28 +5,30 @@ const maxPlayerY = 365;
 const maxSpeed = 200;
 
 class Player {
-	constructor(phaserGame, id, name) {
-		this.id = id;
-		this.name = name;
-		this.posX = 0;
-		this.prevPosX = 0;
-		this.vel = 0; // скорость
-		this.targetY = 100;
-		this.sprite = phaserGame.add.sprite(100, 100, 'ship');
-		this.sprite.anchor.set(0.5);
-	}
+    constructor(phaserGame, id, name) {
+        this.id = id;
+        this.name = name;
+        this.posX = 0;
+        this.prevPosX = 0;
+        this.vel = 0; // скорость
+        this.targetY = 100;
+        this.sprite = phaserGame.add.sprite(100, 100, 'ship');
+        this.sprite.anchor.set(0.5);
+    }
 
-	getTargetY() {
-		return this.sprite.position.y;
-	}
+    getTargetY() {
+        return this.sprite.position.y;
+    }
 
-	setVelocity(velocity) {
-		this.sprite.body.velocity.y = velocity * maxSpeed;
-	}
+    setVelocity(velocity) {
+        if (this.sprite.body) {
+            this.sprite.body.velocity.y = velocity * maxSpeed;
+        }
+    }
 
-	update() {
-		this.vel = this.posX - this.prevPosX;
-		this.prevPosX = this.posX;
+    update() {
+        this.vel = this.posX - this.prevPosX;
+        this.prevPosX = this.posX;
 
         if (this.sprite.y < minPlayerY) {
             this.sprite.y = minPlayerY;
@@ -34,5 +36,5 @@ class Player {
         if (this.sprite.y > maxPlayerY) {
             this.sprite.y = maxPlayerY;
         }
-	}
+    }
 }
