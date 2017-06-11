@@ -100,6 +100,15 @@ class Game {
                 this.onPlayerConnected(p.id, p.name, p.color);
             }
         }
+
+        if (tickInfo.bullets) {
+            for (let bullet of tickInfo.bullets) {
+                let player = this.players[p.id];
+                if (player) {
+                    log(player.id + " -> fire");
+                }
+            }
+        }
     }
 
     onPlayerConnected(playerId, playerName, color) {
