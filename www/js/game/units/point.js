@@ -14,31 +14,28 @@ class ClickPoint {
         //this.sprite.body.velocity.set(1000, 200);
 
 
-       // this.demoTween = game.add.tween(this.sprite).to({x:distance,y:y},1000);
+        this.demoTween = game.add.tween(this.sprite).to({x:toX,y:toY, angle: 360},1000);
 
-        this.sprite.x = toX;
-        this.sprite.y = toY;
+        //this.sprite.x = toX;
+        //this.sprite.y = toY;
 
-        this.sprite.loadTexture('barrel2', 0, false);
-        /*
+        //this.sprite.loadTexture('barrel2', 0, false);
+
         this.demoTween.onComplete.add(()=> {
             this.spriteCanSwim = true;
-
-            this.sprite.x = x + distance;
-            this.sprite.y = y;
             this.sprite.loadTexture('barrel2', 0, false);
-            //this.sprite.x = distance + x
-            //this.sprite.y = y
         });
+
+
         this.demoTween.start();
-        */
     }
 
     update() {
         //this.demoTween.start();
-        //if (this.spriteCanSwim)
-        this.sprite.x -= this.vel;
-        pgame.physics.arcade.collide(this.sprite, this.player.sprite, this.affectorHitPlayer, null, this);
+        if (this.spriteCanSwim) {
+            this.sprite.x -= this.vel;
+            pgame.physics.arcade.collide(this.sprite, this.player.sprite, this.affectorHitPlayer, null, this);
+        }
         if (this.sprite.x < -30) { // возможно, правильнее сравнивать с позицией последнего игрока
             this.game.delPoint(this);
             this.sprite.destroy();
