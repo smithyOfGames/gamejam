@@ -41,6 +41,7 @@ class Splash {
         pgame.load.image('collision', 'assets/images/collision.png');
         pgame.load.image('button_s', 'assets/images/button_s.png');
         pgame.load.image('button_w', 'assets/images/button_w.png');
+        pgame.load.image('button_space', 'assets/images/button_space.png');
         pgame.load.image('splash_win', 'assets/images/splash_win.jpg');
         pgame.load.image('splash_lose', 'assets/images/splash_lose.jpg');
     }
