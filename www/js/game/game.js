@@ -70,6 +70,10 @@ class Game {
         buttonDown.inputEnabled = true;
         buttonDown.events.onInputDown.add(()=>this.socket.emit("move", "down"), this);
 
+        let buttonFire = pgame.add.sprite(pgame.width - 280, pgame.height - 120, 'button_space');
+        buttonFire.inputEnabled = true;
+        buttonFire.events.onInputDown.add(this.fire, this);
+
         let onStopPressing = function (target) {
             this.socket.emit("move", "stop");
         };

@@ -10,4 +10,9 @@ class Victory {
     preload() {
         pgame.add.existing(this.background);
     }
+
+    create() {
+        splashMusic.play();
+        gameMusic.pause();
+    }
 }
