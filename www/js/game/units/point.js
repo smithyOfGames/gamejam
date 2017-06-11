@@ -1,12 +1,29 @@
 'use strict'
 
 class ClickPoint {
-    constructor(game, player, fromX, fromY, toX, toY) {
-        this.sprite = pgame.add.sprite(player.sprite.position.x, player.sprite.position.y, 'barrel');
+    /*
+    constructor(game, players, currPlayer, fromX, fromY, toX, toY) {
+        this.sprite = pgame.add.sprite(toX, toY, 'barrel2');
+        this.sprite.anchor.set(0.5);
+        this.spriteCanSwim = true;
+        this.vel = 0; // скорость движения
+        this.players = players;
+        this.currPlayer = currPlayer;
+        this.checkPlayer = null;
+        this.game = game;
+        pgame.physics.enable(this.sprite, Phaser.Physics.ARCADE);
+    }
+    */
+
+    constructor(game, players, currPlayer, fromX, fromY, toX, toY) {
+        this.sprite = pgame.add.sprite(fromX, fromY, 'barrel');
+        //this.sprite = pgame.add.sprite(toX, toY, 'barrel2');
         this.sprite.anchor.set(0.5);
         this.spriteCanSwim = false;
         this.vel = 0; // скорость движения
-        this.player = player;
+        this.players = players;
+        this.currPlayer = currPlayer;
+        this.checkPlayer = null;
         this.game = game;
         pgame.physics.enable(this.sprite, Phaser.Physics.ARCADE);
 
@@ -26,15 +43,16 @@ class ClickPoint {
             this.sprite.loadTexture('barrel2', 0, false);
         });
 
-
         this.demoTween.start();
     }
 
     update() {
-        //this.demoTween.start();
         if (this.spriteCanSwim) {
             this.sprite.x -= this.vel;
-            pgame.physics.arcade.collide(this.sprite, this.player.sprite, this.affectorHitPlayer, null, this);
+            for (let p of this.players.values()) {
+                this.checkPlayer = p;
+                pgame.physics.arcade.collide(this.sprite, p.sprite, this.affectorHitPlayer, null, this);
+            }
         }
         if (this.sprite.x < -30) { // возможно, правильнее сравнивать с позицией последнего игрока
             this.game.delPoint(this);
@@ -42,13 +60,15 @@ class ClickPoint {
         }
     }
 
-    affectorHitPlayer () {
-        var collsisionSprite = pgame.add.sprite(this.sprite.x - Number(this.player.sprite.width / 2), this.sprite.y - Number(this.player.sprite.height / 4), 'collision');
-        this.sprite.destroy();
+    affectorHitPlayer (bulletSprite, playerSprite) {
+        var collsisionSprite = pgame.add.sprite(bulletSprite.x - Number(playerSprite.width / 2), bulletSprite.y - Number(playerSprite.height / 4), 'collision');
+        bulletSprite.destroy();
+        if (this.currPlayer == this.checkPlayer) {
+            this.game.socket.emit('collision', 'barrel');
+        }
+
         pgame.time.events.add(Phaser.Timer.SECOND * 0.3, ()=> {
-            var send =  this.game.socket.emit('collision', 'barrel');
-        //console.log(send);
-        collsisionSprite.destroy();
-    });
+            collsisionSprite.destroy();
+        });
     }
 }
