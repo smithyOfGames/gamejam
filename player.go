@@ -6,8 +6,8 @@ type Vec2 struct {
 }
 
 const (
-	minPlayerPosY float32 = 20
-	maxPlayerPosY float32 = 365
+	minPlayerPosY float32 = 40
+	maxPlayerPosY float32 = 340
 )
 
 var availableColors []string = []string{"red", "blue", "green", "yellow"}
@@ -37,9 +37,9 @@ func NewPlayer(socketId string, playerName string, posY float32, colorIndex int)
 func (self *Player) Move(msg string) {
 	switch msg {
 	case "down":
-		self.Vel.Y = 100
+		self.Vel.Y = 30
 	case "up":
-		self.Vel.Y = -100
+		self.Vel.Y = -30
 	case "stop":
 		self.Vel.Y = 0
 	}
@@ -47,7 +47,9 @@ func (self *Player) Move(msg string) {
 
 func (self *Player) Update(dt float32) {
 	self.Pos.X += self.Vel.X * dt
-	self.Pos.Y += self.Vel.Y * dt
+	self.Pos.Y += self.Vel.Y
+
+	self.Vel.Y = 0
 
 	if self.Pos.Y < minPlayerPosY {
 		self.Pos.Y = minPlayerPosY

@@ -1,8 +1,7 @@
 'use strict';
 
-const minPlayerY = 20;
-const maxPlayerY = 365;
-const maxSpeed = 200;
+const minPlayerY = 40;
+const maxPlayerY = 340;
 
 class Player {
     constructor(phaserGame, id, name, color) {
