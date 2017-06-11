@@ -20,11 +20,10 @@ class ClickPoint {
     }
 
     affectorHitPlayer () {
+        this.game.socket.emit('collision', 'barrel');
         var collsisionSprite = pgame.add.sprite(this.sprite.x - Number(this.player.sprite.width / 2), this.sprite.y - Number(this.player.sprite.height / 4), 'collision');
         this.sprite.destroy();
         pgame.time.events.add(Phaser.Timer.SECOND * 0.3, ()=> {
-            var send =  this.game.socket.emit('collision', 'barrel');
-            console.log(send);
             collsisionSprite.destroy();
         });
     }

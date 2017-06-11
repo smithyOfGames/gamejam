@@ -43,9 +43,11 @@ class Game {
             this.fire();
         }
 
-        currentPlayer.update();
-        let playerVel = currentPlayer.vel;
+        for (let p of this.players.values()) {
+            p.update(currentPlayer);
+        }
 
+        let playerVel = currentPlayer.vel;
         this.playerRoad.vel = playerVel;
         this.playerRoad.update();
 
@@ -54,9 +56,6 @@ class Game {
             p.update(); // TODO передать скорость дороги
         }
 
-        for (let p of this.players.values()) {
-            p.update();
-        }
     }
 
     initNetwork() {
@@ -77,6 +76,7 @@ class Game {
     }
 
     onTick(msg) {
+        //log(msg);
         let tickInfo = JSON.parse(msg);
         for (let p of tickInfo.players) {
             if (this.players.has(p.id)) {

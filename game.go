@@ -66,6 +66,17 @@ func (self *Game) AddPlayer(so socketio.Socket) {
 		player := NewPlayer(so.Id(), playerName, posY, playerCount+1)
 		log.Debug("set player id: ", so.Id())
 
+		if playerCount > 0 {
+			// определяем отстающего
+			var minX float32 = float32(100500 * 100500)
+			for _, p := range self.players {
+				if minX > p.Pos.X {
+					minX = p.Pos.X
+				}
+			}
+			player.Pos.X = minX // новый пользователь на уровне отстающего
+		}
+
 		func() {
 			playersLock.Lock()
 			defer playersLock.Unlock()
@@ -92,7 +103,7 @@ func (self *Game) AddPlayer(so socketio.Socket) {
 				<-time.After(1000 * time.Millisecond)
 				p.Vel.X = 250
 			}()
-			p.Vel.X = 0
+			p.Vel.X = 100
 		case "island":
 			p.Vel.X = 0
 		}

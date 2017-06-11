@@ -20,9 +20,13 @@ class Player {
         return this.sprite.position.y;
     }
 
-    update() {
+    update(currPlayer) {
         this.vel = this.posX - this.prevPosX;
         this.prevPosX = this.posX;
+
+        if (this != currPlayer) {
+            this.sprite.x = currPlayer.sprite.x + (this.posX - currPlayer.posX);
+        }
 
         if (this.sprite.y < minPlayerY) {
             this.sprite.y = minPlayerY;
