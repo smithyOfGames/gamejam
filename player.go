@@ -26,7 +26,7 @@ func NewPlayer(socketId string, playerName string, posY float32, colorIndex int)
 		Id:      socketId,
 		Name:    playerName,
 		Vel:     Vec2{X: 250, Y: 0},
-		Pos:     Vec2{X: 80, Y: posY},
+		Pos:     Vec2{X: 300, Y: posY},
 		TargetY: 100,
 		Color:   availableColors[colorIndex],
 	}
