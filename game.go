@@ -74,7 +74,7 @@ func (self *Game) AddPlayer(so socketio.Socket) {
 			return
 		}
 
-		//TODO: Перезапустить таймер
+		timer = time.NewTimer(time.Second * gameDuration)
 
 		posY := float32(playerCount+1) * 80.0
 		player := NewPlayer(so.Id(), playerName, posY, playerCount+1)
@@ -101,8 +101,16 @@ func (self *Game) AddPlayer(so socketio.Socket) {
 
 		go func() {
 			<-timer.C
-			so.BroadcastTo(_GAME_ROOM, "win", player.Id)
-			so.Emit("win", player.Id)
+			var maxPos float32
+			var winnerId string
+			for _, p := range self.players {
+				if p.Pos.X > maxPos {
+					maxPos = p.Pos.X
+					winnerId = p.Id
+				}
+			}
+			so.BroadcastTo(_GAME_ROOM, "win", winnerId)
+			so.Emit("win", winnerId)
 		}()
 	})
 
