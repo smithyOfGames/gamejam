@@ -13,9 +13,12 @@ import (
 const (
 	_GAME_ROOM      = "game"
 	maxCountPlayers = 4
+	gameDuration    = 60
 )
 
 var playersLock = sync.Mutex{}
+
+var timer = time.NewTimer(time.Second * gameDuration)
 
 type Game struct {
 	server  *socketio.Server
@@ -62,6 +65,8 @@ func (self *Game) AddPlayer(so socketio.Socket) {
 			return
 		}
 
+		//TODO: Перезапустить таймер
+
 		posY := float32(playerCount+1) * 80.0
 		player := NewPlayer(so.Id(), playerName, posY, playerCount+1)
 		log.Debug("set player id: ", so.Id())
@@ -84,6 +89,12 @@ func (self *Game) AddPlayer(so socketio.Socket) {
 		}()
 
 		so.Join(_GAME_ROOM)
+
+		go func() {
+			<-timer.C
+			so.BroadcastTo(_GAME_ROOM, "win", player.Id)
+			so.Emit("win", player.Id)
+		}()
 	})
 
 	so.On("move", func(msg string) {

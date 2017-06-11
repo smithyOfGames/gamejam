@@ -24,9 +24,12 @@ class Splash {
 
         pgame.load.script('menu', 'js/game/menu.js');
         pgame.load.script('game', 'js/game/game.js');
+        pgame.load.script('victory', 'js/game/victory.js');
+        pgame.load.script('lose', 'js/game/lose.js');
         pgame.load.script('player', 'js/game/units/player.js');
         pgame.load.script('point', 'js/game/units/point.js');
         pgame.load.script('road', 'js/game/units/road.js');
+
 
         pgame.load.image('menu_bg', 'assets/images/menu_bg.jpg');
         pgame.load.image('barrel', 'assets/images/barrel2.png');
@@ -38,6 +41,8 @@ class Splash {
         pgame.load.image('collision', 'assets/images/collision.png');
         pgame.load.image('button_s', 'assets/images/button_s.png');
         pgame.load.image('button_w', 'assets/images/button_w.png');
+        pgame.load.image('splash_win', 'assets/images/splash_win.jpg');
+        pgame.load.image('splash_lose', 'assets/images/splash_lose.jpg');
     }
 
     create() {
@@ -49,6 +54,8 @@ class Splash {
 
         pgame.state.add("Menu", Menu);
         pgame.state.add("Game", Game);
+        pgame.state.add("Victory", Victory);
+        pgame.state.add("Lose", Lose);
 
         splashMusic.play();
 
