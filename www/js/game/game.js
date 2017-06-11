@@ -1,7 +1,6 @@
 'use strict';
 
 class Game {
-
     constructor() {
         this.playerName = "player123";
         this.playerRoad = null;
@@ -65,27 +64,7 @@ class Game {
         this.socket.on('tick', (msg)=>this.onTick(msg));
         this.socket.on('playerDisconnected', (msg)=>this.onPlayerDisconnected(msg));
     }
-
-    onConnect() {
-        if (this.player) {
-            this.player.id = this.socket.id;
-        }
-    }
-
-    onTick(msg) {
-        if (!this.player) {
-            return;
-        }
-
-        let tickInfo = JSON.parse(msg);
-        for (let p of tickInfo.players) {
-            if (p.id === this.player.id) {
-                this.player.posX = p.pos.x;
-                this.player.sprite.y = p.pos.y;
-            }
-        }
-    }
-
+    
     fire() {
         let msg = {
             x: 700,
@@ -132,7 +111,7 @@ class Game {
     }
 
     addPoint(x, y) {
-        let p = new ClickPoint(this, x, y)
+        let p = new ClickPoint(this, x, y, this.players.get(this.socket.id))
         this.points.add(p);
     }
 
