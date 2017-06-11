@@ -78,15 +78,16 @@ class Game {
     }
 
     fire() {
-        let msg = {
-            x: 700,
-            y: this.players.get(this.socket.id).getTargetY(),
-            type: "barrel"
-        };
-        log('fire ' + JSON.stringify(msg));
-        this.socket.emit("fire", JSON.stringify(msg));
-
-        this.addPoint(700, this.players.get(this.socket.id).getTargetY());
+        var distance = 700;
+        var player = this.players.get(this.socket.id);
+        log('fire player ' + this.socket.id);
+        var postition = [player.posX, player.getTargetY()];
+        this.socket.emit("fire", JSON.stringify({
+            x: postition[0] + distance,
+            y: postition[1],
+            type: 'barrel',
+        }));
+        this.throwBarrel(player.sprite.x, player.sprite.y, player.sprite.x + distance, player.sprite.y);
     }
 
     onTick(msg) {
@@ -103,9 +104,16 @@ class Game {
         }
 
         if (tickInfo.bullets) {
+            let currentPlayer = this.players.get(this.socket.id);
             for (let bullet of tickInfo.bullets) {
                 let player = this.players.get(bullet.player);
                 if (player) {
+                    if (player != currentPlayer) {
+                        var targetX = bullet.target.x - currentPlayer.posX;
+                        var targetY = bullet.target.y;
+
+                        this.throwBarrel(0, 0, targetX, targetY);
+                    }
                     log(player.id + " -> fire");
                 }
             }
@@ -137,8 +145,8 @@ class Game {
         }
     }
 
-    addPoint(x, y) {
-        let p = new ClickPoint(this, x, y, this.players.get(this.socket.id))
+    throwBarrel(fromX, fromY, toX, toY) {
+        let p = new ClickPoint(this, this.players.get(this.socket.id), fromX, fromY, toX, toY)
         this.points.add(p);
     }
 
