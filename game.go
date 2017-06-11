@@ -13,7 +13,7 @@ import (
 const (
 	_GAME_ROOM      = "game"
 	maxCountPlayers = 4
-	gameDuration    = 60
+	gameDuration    = 30
 )
 
 var playersLock = sync.Mutex{}
