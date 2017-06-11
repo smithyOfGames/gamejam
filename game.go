@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"sync"
 	"time"
 
 	log "smithyOfGames/gamejam/consolelog"
@@ -10,9 +11,11 @@ import (
 )
 
 const (
-	_GAME_ROOM = "game"
-	maxCountPlayers int = 4
+	_GAME_ROOM      = "game"
+	maxCountPlayers = 4
 )
+
+var playersLock = sync.Mutex{}
 
 type Game struct {
 	server  *socketio.Server
@@ -25,9 +28,9 @@ type Pos struct {
 }
 
 type PlayerInfo struct {
-	Id  string `json:"id"`
-	Pos Pos    `json:"pos"`
-	Name string `json:"name"`
+	Id    string `json:"id"`
+	Pos   Pos    `json:"pos"`
+	Name  string `json:"name"`
 	Color string `json:"color"`
 }
 
@@ -53,13 +56,21 @@ func NewGame(server *socketio.Server) *Game {
 
 func (self *Game) AddPlayer(so socketio.Socket) {
 	so.On("joinNewPlayer", func(playerName string) {
-		if currentPlayerNumber == maxCountPlayers {
+		playerCount := len(self.players)
+		if playerCount == maxCountPlayers {
+			log.Debug("sorry, max player count")
 			return
 		}
 
-		player := NewPlayer(so.Id(), playerName)
+		posY := float32(playerCount+1) * 80.0
+		player := NewPlayer(so.Id(), playerName, posY, playerCount)
 		log.Debug("set player id: ", so.Id())
-		self.players[so] = player
+
+		func() {
+			playersLock.Lock()
+			defer playersLock.Unlock()
+			self.players[so] = player
+		}()
 
 		so.Join(_GAME_ROOM)
 	})
@@ -93,7 +104,12 @@ func (self *Game) AddPlayer(so socketio.Socket) {
 		// TODO сделать безопасно (параллельный доступ!!!)
 		player, ok := self.players[so]
 		if ok {
-			delete(self.players, so)
+			func() {
+				playersLock.Lock()
+				defer playersLock.Unlock()
+				delete(self.players, so)
+			}()
+
 			so.BroadcastTo(_GAME_ROOM, "playerDisconnected", player.Id)
 		}
 	})
@@ -121,9 +137,9 @@ func (self *Game) Loop() {
 		//log.Debugf("tick %v", msg)
 		for _, p := range self.players {
 			players = append(players, PlayerInfo{
-				Id:  p.Id,
-				Pos: Pos{int(p.Pos.X), int(p.Pos.Y)},
-				Name: p.Name,
+				Id:    p.Id,
+				Pos:   Pos{int(p.Pos.X), int(p.Pos.Y)},
+				Name:  p.Name,
 				Color: p.Color,
 			})
 		}

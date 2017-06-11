@@ -12,8 +12,6 @@ const (
 
 var availableColors []string = []string{"red", "blue", "green", "yellow"}
 
-var currentPlayerNumber = 0
-
 type Player struct {
 	Id      string
 	Name    string
@@ -23,17 +21,15 @@ type Player struct {
 	Color   string
 }
 
-func NewPlayer(socketId string, playerName string) (player *Player) {
+func NewPlayer(socketId string, playerName string, posY float32, colorIndex int) (player *Player) {
 	player = &Player{
 		Id:      socketId,
 		Name:    playerName,
 		Vel:     Vec2{X: 250, Y: 0},
-		Pos:     Vec2{X: 80, Y: float32(currentPlayerNumber+1) * 80.0},
+		Pos:     Vec2{X: 80, Y: posY},
 		TargetY: 100,
-		Color:   availableColors[currentPlayerNumber],
+		Color:   availableColors[colorIndex],
 	}
-
-	currentPlayerNumber++
 
 	return
 }
