@@ -58,6 +58,7 @@ class Game {
         this.socket = io.connect(window.location.host, {path: "/ws/", transports: ['websocket']});
         this.socket.on('tick', (msg)=>this.onTick(msg));
         this.socket.on('playerDisconnected', (msg)=>this.onPlayerDisconnected(msg));
+        this.socket.on('win', (playerId)=>this.onWin(playerId));
     }
 
     initControls() {
@@ -69,7 +70,7 @@ class Game {
         buttonDown.inputEnabled = true;
         buttonDown.events.onInputDown.add(()=>this.socket.emit("move", "down"), this);
 
-        var onStopPressing = function (target) {
+        let onStopPressing = function (target) {
             this.socket.emit("move", "stop");
         };
         buttonUp.events.onInputUp.add(onStopPressing, this);
@@ -113,6 +114,16 @@ class Game {
         if (this.players.has(playerId)) {
             this.players.get(playerId).sprite.kill();
             this.players.delete(playerId);
+        }
+    }
+
+    onWin(playerId) {
+        if (playerId === this.socket.id) {
+            console.log("vic");
+            pgame.state.start("Victory");
+        } else {
+            console.log("Lose");
+            pgame.state.start("Lose");
         }
     }
 
