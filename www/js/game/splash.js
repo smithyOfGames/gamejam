@@ -33,7 +33,7 @@ class Splash {
         pgame.load.atlas('gamepad', 'assets/virtualjoystick/atlas.png', 'assets/virtualjoystick/atlas.json');
 
         pgame.load.image('menu_bg', 'assets/images/menu_bg.jpg');
-        pgame.load.image('barrel', 'assets/images/barrel.png');
+        pgame.load.image('barrel', 'assets/images/barrel2.png');
         pgame.load.image('water', 'assets/images/water.png');
         pgame.load.image('red', 'assets/images/ship2_red.png');
         pgame.load.image('blue', 'assets/images/ship2_blue.png');

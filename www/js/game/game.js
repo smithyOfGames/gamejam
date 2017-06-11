@@ -1,7 +1,6 @@
 'use strict';
 
 class Game {
-
     constructor() {
         this.playerName = "player123";
         this.playerRoad = null;
@@ -29,7 +28,7 @@ class Game {
         btnDown.onDown.add(()=>this.socket.emit("move", "down"), this);
         btnDown.onUp.add(()=>this.socket.emit("move", "stop"), this);
 
-        let btnUp = pgame.input.keyboard.addKey(Phaser.Keyboard.R);
+        let btnUp = pgame.input.keyboard.addKey(Phaser.Keyboard.W);
         btnUp.onDown.add(()=>this.socket.emit("move", "up"), this);
         btnUp.onUp.add(()=>this.socket.emit("move", "stop"), this);
     }
@@ -64,38 +63,6 @@ class Game {
         this.socket = io.connect(window.location.host, {path: "/ws/", transports: ['websocket']});
         this.socket.on('tick', (msg)=>this.onTick(msg));
         this.socket.on('playerDisconnected', (msg)=>this.onPlayerDisconnected(msg));
-    }
-
-    onConnect() {
-        if (this.player) {
-            this.player.id = this.socket.id;
-        }
-    }
-
-    onTick(msg) {
-        if (!this.player) {
-            return;
-        }
-
-        let tickInfo = JSON.parse(msg);
-        for (let p of tickInfo.players) {
-            if (p.id === this.player.id) {
-                this.player.posX = p.pos.x;
-                this.player.sprite.y = p.pos.y;
-            }
-        }
-    }
-
-    onPlayerConnected(msg) {
-        log("connected player, id: " + msg);
-        let info = JSON.parse(msg);
-        let p = new Player(pgame, info.id, "user");
-        this.players.set(info.id, p);
-    }
-
-    onPlayerDisconnected(msg) {
-        log("disconnected player, id: " + msg);
-        this.players.delete(msg);
     }
 
     fire() {
