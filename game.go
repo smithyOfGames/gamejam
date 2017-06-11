@@ -138,7 +138,7 @@ func (self *Game) AddPlayer(so socketio.Socket) {
 			Type string `json:"type"`
 		}{}
 
-		err := json.Unmarshal([]byte(msg), info)
+		err := json.Unmarshal([]byte(msg), &info)
 		if err != nil {
 			log.Error(err)
 			return
@@ -213,6 +213,10 @@ func (self *Game) Loop() {
 				Players: players,
 				Bullets: self.bullets,
 			})
+
+			if len(self.bullets) > 0 {
+				log.Debug(self.bullets)
+			}
 
 			self.bullets = self.bullets[:0]
 
