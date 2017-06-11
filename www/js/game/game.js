@@ -116,7 +116,7 @@ class Game {
                         var targetX = bullet.target.x - currentPlayer.posX;
                         var targetY = bullet.target.y;
 
-                        this.throwBarrel(0, 0, targetX, targetY);
+                        this.throwBarrel(player.sprite.x, player.sprite.y, targetX, targetY);
                     }
                     log(player.id + " -> fire");
                 }
@@ -150,7 +150,7 @@ class Game {
     }
 
     throwBarrel(fromX, fromY, toX, toY) {
-        let p = new ClickPoint(this, this.players.get(this.socket.id), fromX, fromY, toX, toY)
+        let p = new ClickPoint(this, this.players, fromX, fromY, toX, toY)
         this.points.add(p);
     }
 
