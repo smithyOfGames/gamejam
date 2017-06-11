@@ -10,7 +10,7 @@ class Player {
         this.posX = 0;
         this.prevPosX = 0;
         this.vel = 0;
-        this.sprite = phaserGame.add.sprite(100, 100, color);
+        this.sprite = phaserGame.add.sprite(300, 100, color);
         this.sprite.anchor.set(0.5);
         phaserGame.physics.enable(this.sprite, Phaser.Physics.ARCADE);
     }
