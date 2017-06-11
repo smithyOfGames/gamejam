@@ -82,14 +82,24 @@ class Game {
     }
 
     fire() {
-        var distance = 700;
+        //var distance = 700;
+
+        let maxPos = 0
         var player = this.players.get(this.socket.id);
+        for (let p of this.players.values()) {
+            if (maxPos < p.posX) {
+                maxPos = p.posX;
+            }
+        }
+
         log('fire player ' + this.socket.id);
-        var postition = [player.posX, player.getTargetY()];
+        //var postition = [player.posX, player.getTargetY()];
         //this.throwBarrel(player.sprite.x, player.sprite.y, player.sprite.x + distance, player.sprite.y);
         this.socket.emit("fire", JSON.stringify({
-            x: postition[0] + distance,
-            y: postition[1],
+            //x: postition[0] + distance,
+            //y: postition[1],
+            x: maxPos + 600,
+            y: player.getTargetY(),
             type: 'barrel',
         }));
         log("fire from " + player.posX);
