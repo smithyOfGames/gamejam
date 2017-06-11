@@ -4,8 +4,6 @@ class Game {
 
     constructor() {
         this.playerRoad = null;
-        this.joystick = null;
-        this.buttonA = null;
         this.keyboard = null;
         this.fireButton = null;
         this.points = new Set();
@@ -15,8 +13,9 @@ class Game {
     create() {
         this.initNetwork();
 
-        this.initVirtualGamepad();
         this.playerRoad = new Road(pgame);
+
+        this.initControls();
 
         this.socket.emit("joinNewPlayer", userName);
         log("Игрок " + userName + " вышел в плаванье");
@@ -40,10 +39,6 @@ class Game {
             return;
         }
 
-        if (this.buttonA.isDown) {
-            this.fire();
-        }
-
         for (let p of this.players.values()) {
             p.update(currentPlayer);
         }
@@ -63,6 +58,22 @@ class Game {
         this.socket = io.connect(window.location.host, {path: "/ws/", transports: ['websocket']});
         this.socket.on('tick', (msg)=>this.onTick(msg));
         this.socket.on('playerDisconnected', (msg)=>this.onPlayerDisconnected(msg));
+    }
+
+    initControls() {
+        let buttonUp = pgame.add.sprite(40, pgame.height - 160, 'button_w');
+        buttonUp.inputEnabled = true;
+        buttonUp.events.onInputDown.add(()=>this.socket.emit("move", "up"), this);
+
+        let buttonDown = pgame.add.sprite(40, pgame.height - 80, 'button_s');
+        buttonDown.inputEnabled = true;
+        buttonDown.events.onInputDown.add(()=>this.socket.emit("move", "down"), this);
+
+        var onStopPressing = function (target) {
+            this.socket.emit("move", "stop");
+        };
+        buttonUp.events.onInputUp.add(onStopPressing, this);
+        buttonDown.events.onInputUp.add(onStopPressing, this);
     }
 
     fire() {
@@ -88,12 +99,6 @@ class Game {
                 this.onPlayerConnected(p.id, p.name, p.color);
             }
         }
-    }
-
-    initVirtualGamepad() {
-        let gamepad = pgame.plugins.add(Phaser.Plugin.VirtualGamepad);
-        this.joystick = gamepad.addJoystick(90, pgame.height - 90, 0.75, 'gamepad');
-        this.buttonA = gamepad.addButton(pgame.width - 90, pgame.height - 90, 0.75, 'gamepad');
     }
 
     onPlayerConnected(playerId, playerName, color) {

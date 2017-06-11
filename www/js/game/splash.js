@@ -20,8 +20,6 @@ class Splash {
         pgame.load.audio('game', ['assets/audio/game.mp3', 'assets/audio/game.ogg']);
         pgame.load.audio('splash', ['assets/audio/splash.mp3', 'assets/audio/splash.ogg']);
 
-        pgame.load.script('CanvasInput', 'js/lib/CanvasInput.min.js');
-        pgame.load.script('Gamepad', '/js/lib/phaser-plugin-virtual-gamepad.js');
         pgame.load.script('SocketIO', '/js/lib/socket.io-1.4.5.js');
 
         pgame.load.script('menu', 'js/game/menu.js');
@@ -29,8 +27,6 @@ class Splash {
         pgame.load.script('player', 'js/game/units/player.js');
         pgame.load.script('point', 'js/game/units/point.js');
         pgame.load.script('road', 'js/game/units/road.js');
-
-        pgame.load.atlas('gamepad', 'assets/virtualjoystick/atlas.png', 'assets/virtualjoystick/atlas.json');
 
         pgame.load.image('menu_bg', 'assets/images/menu_bg.jpg');
         pgame.load.image('barrel', 'assets/images/barrel2.png');
@@ -40,6 +36,8 @@ class Splash {
         pgame.load.image('green', 'assets/images/ship2_green.png');
         pgame.load.image('yellow', 'assets/images/ship2_yellow.png');
         pgame.load.image('collision', 'assets/images/collision.png');
+        pgame.load.image('button_s', 'assets/images/button_s.png');
+        pgame.load.image('button_w', 'assets/images/button_w.png');
     }
 
     create() {
