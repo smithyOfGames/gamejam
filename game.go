@@ -17,12 +17,14 @@ const (
 )
 
 var playersLock = sync.Mutex{}
+var bulletsLock = sync.Mutex{}
 
 var timer = time.NewTimer(time.Second * gameDuration)
 
 type Game struct {
 	server  *socketio.Server
 	players map[socketio.Socket]*Player
+	bullets []Bullet
 }
 
 type Pos struct {
@@ -37,9 +39,16 @@ type PlayerInfo struct {
 	Color string `json:"color"`
 }
 
+type Bullet struct {
+	Player string `json:"player"`
+	Type   string `json:"type"`
+	Target Pos    `json:"target"`
+}
+
 type TickInfo struct {
 	TickId  int64        `json:"tickId"` // time?
 	Players []PlayerInfo `json:"players"`
+	Bullets []Bullet     `json:"bullets"`
 }
 
 func NewGame(server *socketio.Server) *Game {
@@ -120,6 +129,32 @@ func (self *Game) AddPlayer(so socketio.Socket) {
 		}
 	})
 
+	so.On("fire", func(msg string) {
+		log.Info("fire from ", so.Id())
+
+		info := struct {
+			X    int    `json:"x"`
+			Y    int    `json:"y"`
+			Type string `json:"type"`
+		}{}
+
+		err := json.Unmarshal([]byte(msg), &info)
+		if err != nil {
+			log.Error(err)
+			return
+		}
+
+		func() {
+			bulletsLock.Lock()
+			defer bulletsLock.Unlock()
+			self.bullets = append(self.bullets, Bullet{
+				Player: so.Id(),
+				Type:   info.Type,
+				Target: Pos{info.X, info.Y},
+			})
+		}()
+	})
+
 	so.On("disconnection", func() {
 		log.Info("on disconnect")
 
@@ -149,29 +184,44 @@ func (self *Game) Loop() {
 		deltaTime := float32(t.Sub(prevTick).Seconds())
 		prevTick = t
 
-		players = players[:0]
-
 		for _, p := range self.players {
 			p.Update(deltaTime)
 		}
 
-		//msg := fmt.Sprintf("%v", deltaTime)
-		//log.Debugf("tick %v", msg)
-		for _, p := range self.players {
-			players = append(players, PlayerInfo{
-				Id:    p.Id,
-				Pos:   Pos{int(p.Pos.X), int(p.Pos.Y)},
-				Name:  p.Name,
-				Color: p.Color,
+		players = players[:0]
+		func() {
+			playersLock.Lock()
+			defer playersLock.Unlock()
+
+			for _, p := range self.players {
+				players = append(players, PlayerInfo{
+					Id:    p.Id,
+					Pos:   Pos{int(p.Pos.X), int(p.Pos.Y)},
+					Name:  p.Name,
+					Color: p.Color,
+				})
+			}
+		}()
+
+		var msg []byte
+		func() {
+			bulletsLock.Lock()
+			defer bulletsLock.Unlock()
+
+			msg, _ = json.Marshal(TickInfo{
+				TickId:  0,
+				Players: players,
+				Bullets: self.bullets,
 			})
-		}
 
-		msg, _ := json.Marshal(TickInfo{
-			TickId:  0,
-			Players: players,
-		})
+			if len(self.bullets) > 0 {
+				log.Debug(self.bullets)
+			}
+
+			self.bullets = self.bullets[:0]
+
+		}()
+
 		self.server.BroadcastTo(_GAME_ROOM, "tick", string(msg))
-
-		//time.Sleep(300 * time.Millisecond)
 	}
 }

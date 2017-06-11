@@ -80,10 +80,11 @@ class Game {
     fire() {
         let msg = {
             x: 700,
-            y: this.players.get(this.socket.id).getTargetY()
+            y: this.players.get(this.socket.id).getTargetY(),
+            type: "barrel"
         };
-        log('click to ' + JSON.stringify(msg));
-        this.socket.emit("move", JSON.stringify(msg));
+        log('fire ' + JSON.stringify(msg));
+        this.socket.emit("fire", JSON.stringify(msg));
 
         this.addPoint(700, this.players.get(this.socket.id).getTargetY());
     }
@@ -98,6 +99,15 @@ class Game {
             } else {
                 console.log(p);
                 this.onPlayerConnected(p.id, p.name, p.color);
+            }
+        }
+
+        if (tickInfo.bullets) {
+            for (let bullet of tickInfo.bullets) {
+                let player = this.players.get(bullet.player);
+                if (player) {
+                    log(player.id + " -> fire");
+                }
             }
         }
     }
