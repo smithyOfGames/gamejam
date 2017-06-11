@@ -63,7 +63,7 @@ func (self *Game) AddPlayer(so socketio.Socket) {
 		}
 
 		posY := float32(playerCount+1) * 80.0
-		player := NewPlayer(so.Id(), playerName, posY, playerCount)
+		player := NewPlayer(so.Id(), playerName, posY, playerCount+1)
 		log.Debug("set player id: ", so.Id())
 
 		func() {
