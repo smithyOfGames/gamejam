@@ -3,6 +3,7 @@
 var pgame;
 var splashMusic;
 var gameMusic;
+var userName = "Бешеный Джек Пират";
 
 class Main {
 

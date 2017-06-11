@@ -1,8 +1,8 @@
 'use strict';
 
 class Game {
+
     constructor() {
-        this.playerName = "player123";
         this.playerRoad = null;
         this.joystick = null;
         this.buttonA = null;
@@ -18,7 +18,8 @@ class Game {
         this.initVirtualGamepad();
         this.playerRoad = new Road(pgame);
 
-        this.socket.emit("joinNewPlayer", this.playerName);
+        this.socket.emit("joinNewPlayer", userName);
+        log("Игрок " + userName + " вышел в плаванье");
 
         this.keyboard = pgame.input.keyboard.createCursorKeys();
         this.fireButton = pgame.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
@@ -64,7 +65,7 @@ class Game {
         this.socket.on('tick', (msg)=>this.onTick(msg));
         this.socket.on('playerDisconnected', (msg)=>this.onPlayerDisconnected(msg));
     }
-    
+
     fire() {
         let msg = {
             x: 700,
