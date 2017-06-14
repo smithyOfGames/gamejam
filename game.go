@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	log "smithyOfGames/gamejam/consolelog"
+	log "github.com/smithyOfGames/gamejam/consolelog"
 
 	"github.com/googollee/go-socket.io"
 )
@@ -77,7 +77,7 @@ func (self *Game) AddPlayer(so socketio.Socket) {
 		timer = time.NewTimer(time.Second * gameDuration)
 
 		posY := float32(playerCount+1) * 80.0
-		player := NewPlayer(so.Id(), playerName, posY, playerCount+1)
+		player := NewPlayer(so.Id(), playerName, posY, playerCount)
 		log.Debug("set player id: ", so.Id())
 
 		if playerCount > 0 {

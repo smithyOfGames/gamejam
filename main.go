@@ -1,7 +1,7 @@
 package main
 
 import (
-	log "smithyOfGames/gamejam/consolelog"
+	log "github.com/smithyOfGames/gamejam/consolelog"
 
 	"net/http"
 

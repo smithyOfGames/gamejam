@@ -1,0 +1,18 @@
+language: go
+go:
+  - 1.7.x
+install:
+  - go get -u github.com/FiloSottile/gvt
+  - gvt restore
+branches:
+  only:
+  - master
+script:
+  - go build
+deploy:
+  provider: script
+  script: deploy.sh
+  on:
+    branch: master
+notifications:
+  email: kot_tdf@mail.ru
