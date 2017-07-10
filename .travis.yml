@@ -10,6 +10,7 @@ branches:
 script:
   - go build
 deploy:
+  skip_cleanup: true
   provider: script
   script: deploy.sh
   on:
